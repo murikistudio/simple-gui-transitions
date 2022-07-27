@@ -21,6 +21,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Simple GUI Transitions"
+run/main_scene="res://addons/simple-gui-transitions/example/main.tscn"
 config/icon="res://icon.png"
 
 [editor_plugins]
