@@ -1,0 +1,38 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=4
+
+_global_script_classes=[ {
+"base": "Tween",
+"class": "GuiTransition",
+"language": "GDScript",
+"path": "res://addons/simple-gui-transitions/transition.gd"
+} ]
+_global_script_class_icons={
+"GuiTransition": "res://addons/simple-gui-transitions/icon.png"
+}
+
+[application]
+
+config/name="Simple GUI Transitions"
+config/icon="res://icon.png"
+
+[editor_plugins]
+
+enabled=PoolStringArray( "res://addons/simple-gui-transitions/plugin.cfg" )
+
+[physics]
+
+common/enable_pause_aware_picking=true
+
+[rendering]
+
+quality/driver/driver_name="GLES2"
+vram_compression/import_etc=true
+vram_compression/import_etc2=false
