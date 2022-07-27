@@ -14,7 +14,7 @@ layout_id = "Layout1"
 animation = 4
 _layout = NodePath("..")
 _group = NodePath("../HBoxContainer/VBoxContainer")
-delay = 0.05
+delay = 0.1
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 anchor_right = 1.0
