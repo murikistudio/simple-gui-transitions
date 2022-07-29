@@ -1,5 +1,5 @@
 class_name GuiTransition, "res://addons/simple-gui-transitions/icon.png"
-extends Tween
+extends Node
 
 
 enum Anim {
@@ -12,6 +12,7 @@ enum Anim {
 
 const DEFAULT_TRANS := Tween.TRANS_QUAD
 const DEFAULT_EASE := Tween.EASE_IN_OUT
+const DEFAULT_GROUP := "gui_transition"
 
 var nodes := []
 
@@ -25,10 +26,12 @@ export(float, 0.1, 2.0, 0.01) var duration := 0.5
 
 onready var layout: Control = get_node(_layout) if _layout else null
 onready var group: Control = get_node(_group) if _group else null
+onready var tween: Tween = Tween.new()
 
 
 func _ready() -> void:
-	add_to_group("transition")
+	add_child(tween)
+	add_to_group(DEFAULT_GROUP)
 
 	if _transition_valid():
 		if not layout_id:
@@ -41,23 +44,6 @@ func _ready() -> void:
 			_show()
 
 
-# Public static methods
-static func go_to(owner: Node, id := "", function: FuncRef = null, args := []):
-	owner.get_tree().call_group("transition", "_go_to", id, function, args)
-
-
-static func update(owner: Node, function: FuncRef = null, args := []):
-	owner.get_tree().call_group("transition", "_update", function, args)
-
-
-static func show(owner: Node, id := ""):
-	owner.get_tree().call_group("transition", "_show", id)
-
-
-static func hide(owner: Node, id := ""):
-	owner.get_tree().call_group("transition", "_hide", id)
-
-
 # Private methods
 func _go_to(id := "", function: FuncRef = null, args := []):
 	if not id:
@@ -66,19 +52,19 @@ func _go_to(id := "", function: FuncRef = null, args := []):
 	if _transition_valid() and layout.visible:
 		if id != layout_id:
 			_hide()
-			yield(self, "tween_all_completed")
+			yield(tween, "tween_all_completed")
 
 			if function:
 				function.call_funcv(args)
 
-			get_tree().call_group("transition", "_show", id)
+			get_tree().call_group(DEFAULT_GROUP, "_show", id)
 
 
 func _update(function: FuncRef = null, args := []):
 	if _transition_valid() and layout.visible:
 
 		_hide(layout_id)
-		yield(self, "tween_all_completed")
+		yield(tween, "tween_all_completed")
 
 		if function:
 			function.call_funcv(args)
@@ -93,7 +79,7 @@ func _show(id := ""):
 				_fade_in(node_info)
 			else:
 				_slide_in(node_info)
-		start()
+		tween.start()
 
 
 func _hide(id := ""):
@@ -104,8 +90,8 @@ func _hide(id := ""):
 			else:
 				_slide_out(node_info)
 
-		start()
-		yield(self, "tween_all_completed")
+		tween.start()
+		yield(tween, "tween_all_completed")
 		layout.visible = false
 
 
@@ -118,7 +104,7 @@ func _slide_in(node_info: Dictionary):
 	layout.visible = true
 
 	# Bring alpha up
-	interpolate_property(
+	tween.interpolate_property(
 		node_info.node, "modulate:a",
 		0.0, 1.0,
 		alpha_delay,
@@ -130,7 +116,7 @@ func _slide_in(node_info: Dictionary):
 #	var initial_position := node_info.node.rect_position as Vector2
 	var target_position := _get_target_position(node_info.node.rect_position)
 
-	interpolate_property(
+	tween.interpolate_property(
 		node_info.node, "rect_position",
 		target_position, node_info.initial_position,
 		duration,
@@ -139,7 +125,7 @@ func _slide_in(node_info: Dictionary):
 		node_info.delay
 	)
 	_unset_clickable(node_info)
-	yield(self, "tween_all_completed")
+	yield(tween, "tween_all_completed")
 	_revert_clickable(node_info)
 
 
@@ -150,7 +136,7 @@ func _slide_out(node_info: Dictionary):
 	var initial_position := node_info.node.rect_position as Vector2
 	var target_position := _get_target_position(node_info.node.rect_position)
 
-	interpolate_property(
+	tween.interpolate_property(
 		node_info.node, "rect_position",
 		initial_position, target_position,
 		duration,
@@ -159,7 +145,7 @@ func _slide_out(node_info: Dictionary):
 		node_info.delay
 	)
 	_unset_clickable(node_info)
-	yield(self, "tween_all_completed")
+	yield(tween, "tween_all_completed")
 	node_info.node.modulate.a = 0.0
 	layout.visible = false
 
@@ -167,7 +153,7 @@ func _slide_out(node_info: Dictionary):
 func _fade_in(node_info: Dictionary):
 	layout.visible = true
 
-	interpolate_property(
+	tween.interpolate_property(
 		node_info.node, "modulate:a",
 		0.0, 1.0,
 		duration,
@@ -176,12 +162,12 @@ func _fade_in(node_info: Dictionary):
 		node_info.delay
 	)
 	_unset_clickable(node_info)
-	yield(self, "tween_all_completed")
+	yield(tween, "tween_all_completed")
 	_revert_clickable(node_info)
 
 
 func _fade_out(node_info: Dictionary):
-	interpolate_property(
+	tween.interpolate_property(
 		node_info.node, "modulate:a",
 		1.0, 0.0,
 		duration,

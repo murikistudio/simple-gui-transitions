@@ -2,12 +2,12 @@ extends Control
 
 
 func _on_ButtonUpdate_pressed() -> void:
-	GuiTransition.update(self)
+	GuiTransitions.update()
 
 
 func _on_ButtonHide_pressed() -> void:
-	GuiTransition.hide(self, "Layout2")
+	GuiTransitions.hide("Layout2")
 
 
 func _on_ButtonGoTo_pressed() -> void:
-	GuiTransition.go_to(self, "Layout1")
+	GuiTransitions.go_to("Layout1")
