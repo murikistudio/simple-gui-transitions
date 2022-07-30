@@ -13,5 +13,5 @@ func show(id := ""):
 	self.get_tree().call_group(GuiTransition.DEFAULT_GROUP, "_show", id)
 
 
-func hide(id := ""):
-	self.get_tree().call_group(GuiTransition.DEFAULT_GROUP, "_hide", id)
+func hide(id := "", function: FuncRef = null, args := []):
+	self.get_tree().call_group(GuiTransition.DEFAULT_GROUP, "_hide", id, function, args)

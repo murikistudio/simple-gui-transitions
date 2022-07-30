@@ -76,24 +76,18 @@ func _go_to(id := "", function: FuncRef = null, args := []):
 
 	if _transition_valid() and layout.visible:
 		if id != layout_id:
-			_hide()
+			_hide("", function, args)
 			yield(tween, "tween_all_completed")
-
-			if function:
-				function.call_funcv(args)
-
+			get_tree().call_group(DEFAULT_GROUP, "_show", id)
+		else:
 			get_tree().call_group(DEFAULT_GROUP, "_show", id)
 
 
 func _update(function: FuncRef = null, args := []):
 	if _transition_valid() and layout.visible:
 
-		_hide(layout_id)
+		_hide(layout_id, function, args)
 		yield(tween, "tween_all_completed")
-
-		if function:
-			function.call_funcv(args)
-
 		_show(layout_id)
 
 
@@ -107,7 +101,7 @@ func _show(id := ""):
 		tween.start()
 
 
-func _hide(id := ""):
+func _hide(id := "", function: FuncRef = null, args := []):
 	if _transition_valid() and layout.visible and (not id or id == layout_id):
 		for node_info in nodes:
 			if animation == Anim.FADE:
@@ -117,6 +111,10 @@ func _hide(id := ""):
 
 		tween.start()
 		yield(tween, "tween_all_completed")
+
+		if function:
+			function.call_funcv(args)
+
 		layout.visible = false
 
 
