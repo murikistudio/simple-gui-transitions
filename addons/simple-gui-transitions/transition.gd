@@ -14,6 +14,8 @@ const DEFAULT_TRANS := Tween.TRANS_QUAD
 const DEFAULT_EASE := Tween.EASE_IN_OUT
 const DEFAULT_GROUP := "gui_transition"
 
+var _transition := Tween.TRANS_QUAD
+var _ease := Tween.EASE_IN_OUT
 var nodes := []
 
 export var layout_id := ""
@@ -22,7 +24,27 @@ export(NodePath) var _layout: NodePath
 export(NodePath) var _group: NodePath
 export(float, 0.0, 1.0, 0.01) var delay := 0.0
 export(float, 0.0, 1.0, 0.01) var alpha_delay := 0.1
-export(float, 0.1, 2.0, 0.01) var duration := 0.5
+export(
+	String,
+	"LINEAR",
+	"SINE",
+	"QUINT",
+	"QUART",
+	"QUAD",
+	"EXPO",
+	"ELASTIC",
+	"CUBIC",
+	"CIRC",
+	"BOUNCE",
+	"BACK"
+	) var transition_type := "QUAD"
+export(
+	String,
+	"IN",
+	"OUT",
+	"IN_OUT",
+	"OUT_IN"
+	) var ease_type := "IN_OUT"
 
 onready var layout: Control = get_node(_layout) if _layout else null
 onready var group: Control = get_node(_group) if _group else null
@@ -30,6 +52,9 @@ onready var tween: Tween = Tween.new()
 
 
 func _ready() -> void:
+	_transition = tween.get("TRANS_" + transition_type)
+	_ease = tween.get("EASE_" + ease_type)
+
 	add_child(tween)
 	add_to_group(DEFAULT_GROUP)
 
@@ -120,8 +145,8 @@ func _slide_in(node_info: Dictionary):
 		node_info.node, "rect_position",
 		target_position, node_info.initial_position,
 		duration,
-		DEFAULT_TRANS,
-		DEFAULT_EASE,
+		_transition,
+		_ease,
 		node_info.delay
 	)
 	_unset_clickable(node_info)
@@ -140,8 +165,8 @@ func _slide_out(node_info: Dictionary):
 		node_info.node, "rect_position",
 		initial_position, target_position,
 		duration,
-		DEFAULT_TRANS,
-		DEFAULT_EASE,
+		_transition,
+		_ease,
 		node_info.delay
 	)
 	_unset_clickable(node_info)
@@ -157,8 +182,8 @@ func _fade_in(node_info: Dictionary):
 		node_info.node, "modulate:a",
 		0.0, 1.0,
 		duration,
-		DEFAULT_TRANS,
-		DEFAULT_EASE,
+		_transition,
+		_ease,
 		node_info.delay
 	)
 	_unset_clickable(node_info)
@@ -171,8 +196,8 @@ func _fade_out(node_info: Dictionary):
 		node_info.node, "modulate:a",
 		1.0, 0.0,
 		duration,
-		DEFAULT_TRANS,
-		DEFAULT_EASE,
+		_transition,
+		_ease,
 		node_info.delay
 	)
 	_unset_clickable(node_info)
