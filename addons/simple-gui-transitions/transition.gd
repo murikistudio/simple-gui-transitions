@@ -22,7 +22,7 @@ export(NodePath) var _layout: NodePath
 export(NodePath) var _group: NodePath
 export(float, 0.0, 1.0, 0.01) var delay := 0.05
 export(float, 0.0, 1.0, 0.01) var alpha_delay := 0.1
-export(float, 0.1, 2.0, 0.01) var duration := 0.4
+export(float, 0.1, 2.0, 0.01) var duration := 0.5
 export(
 	String,
 	"LINEAR",
