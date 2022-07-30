@@ -98,6 +98,8 @@ func _show(id := ""):
 			else:
 				_slide_in(node_info)
 		tween.start()
+		yield(tween, "tween_all_completed")
+		GuiTransitions.emit_signal("show_completed")
 
 
 func _hide(id := "", function: FuncRef = null, args := []):
@@ -114,6 +116,7 @@ func _hide(id := "", function: FuncRef = null, args := []):
 		if function:
 			function.call_funcv(args)
 
+		GuiTransitions.emit_signal("hide_completed")
 		layout.visible = false
 
 

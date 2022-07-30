@@ -1,6 +1,10 @@
 extends Node
 
 
+signal show_completed
+signal hide_completed
+
+
 func go_to(id := "", function: FuncRef = null, args := []):
 	self.get_tree().call_group(GuiTransition.DEFAULT_GROUP, "_go_to", id, function, args)
 
