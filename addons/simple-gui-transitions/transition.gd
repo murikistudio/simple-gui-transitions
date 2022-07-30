@@ -10,8 +10,6 @@ enum Anim {
 	FADE,
 }
 
-const DEFAULT_TRANS := Tween.TRANS_QUAD
-const DEFAULT_EASE := Tween.EASE_IN_OUT
 const DEFAULT_GROUP := "gui_transition"
 
 var _transition := Tween.TRANS_QUAD
@@ -22,8 +20,9 @@ export var layout_id := ""
 export(Anim) var animation := Anim.SLIDE_LEFT
 export(NodePath) var _layout: NodePath
 export(NodePath) var _group: NodePath
-export(float, 0.0, 1.0, 0.01) var delay := 0.0
+export(float, 0.0, 1.0, 0.01) var delay := 0.05
 export(float, 0.0, 1.0, 0.01) var alpha_delay := 0.1
+export(float, 0.1, 2.0, 0.01) var duration := 0.4
 export(
 	String,
 	"LINEAR",
