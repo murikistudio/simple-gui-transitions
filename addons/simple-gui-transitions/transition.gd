@@ -16,6 +16,7 @@ var _transition := Tween.TRANS_QUAD
 var _ease := Tween.EASE_IN_OUT
 var nodes := []
 
+export var auto_start := true
 export var layout_id := ""
 export(Anim) var animation := Anim.SLIDE_LEFT
 export(NodePath) var _layout: NodePath
@@ -64,7 +65,7 @@ func _ready() -> void:
 		_get_group_nodes()
 		_init_children()
 
-		if layout.visible:
+		if layout.visible and auto_start:
 			_show()
 
 
@@ -251,5 +252,6 @@ func _revert_clickable(node_info: Dictionary):
 
 
 func _init_children():
-	for node_info in nodes:
-		node_info.node.modulate.a = 0.0
+	if auto_start:
+		for node_info in nodes:
+			node_info.node.modulate.a = 0.0
