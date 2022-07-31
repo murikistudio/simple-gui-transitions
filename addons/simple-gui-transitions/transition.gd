@@ -15,15 +15,15 @@ const DEFAULT_GROUP := "gui_transition"
 var _transition := Tween.TRANS_QUAD
 var _ease := Tween.EASE_IN_OUT
 var nodes := []
+var alpha_delay := 0.09
 
 export var auto_start := true
 export var layout_id := ""
 export(Anim) var animation := Anim.SLIDE_LEFT
+export(float, 0.1, 2.0, 0.01) var duration := 0.3
 export(NodePath) var _layout: NodePath
 export(NodePath) var _group: NodePath
 export(float, 0.0, 1.0, 0.01) var delay := 0.05
-export(float, 0.0, 1.0, 0.01) var alpha_delay := 0.1
-export(float, 0.1, 2.0, 0.01) var duration := 0.5
 export(
 	String,
 	"LINEAR",
