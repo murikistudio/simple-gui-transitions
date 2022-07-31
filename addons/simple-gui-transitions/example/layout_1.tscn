@@ -12,6 +12,7 @@ script = ExtResource( 1 )
 script = ExtResource( 2 )
 layout_id = "Layout1"
 animation = 4
+duration = 0.5
 _layout = NodePath("..")
 _group = NodePath("../HBoxContainer/VBoxContainer")
 delay = 0.1
