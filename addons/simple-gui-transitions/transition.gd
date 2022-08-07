@@ -127,11 +127,13 @@ func _transition_valid() -> bool:
 
 
 func _slide_in(node_info: Dictionary):
+	var node: Control = node_info.node
+
 	layout.visible = true
 
 	# Bring alpha up
 	tween.interpolate_property(
-		node_info.node, "modulate:a",
+		node, "modulate:a",
 		0.0, 1.0,
 		alpha_delay,
 		Tween.TRANS_QUAD,
@@ -139,12 +141,14 @@ func _slide_in(node_info: Dictionary):
 		node_info.delay
 	)
 
-#	var initial_position := node_info.node.rect_position as Vector2
-	var target_position := _get_target_position(node_info.node.rect_position)
+	yield(get_tree(), "idle_frame")
+
+	var initial_position := node.rect_position as Vector2
+	var target_position := _get_target_position(node.rect_position)
 
 	tween.interpolate_property(
-		node_info.node, "rect_position",
-		target_position, node_info.initial_position,
+		node, "rect_position",
+		target_position, initial_position,
 		duration,
 		_transition,
 		_ease,
@@ -156,14 +160,16 @@ func _slide_in(node_info: Dictionary):
 
 
 func _slide_out(node_info: Dictionary):
-	node_info.node.rect_min_size = Vector2(1, 1)
-	node_info.node.rect_min_size = Vector2.ZERO
+	var node: Control = node_info.node
 
-	var initial_position := node_info.node.rect_position as Vector2
-	var target_position := _get_target_position(node_info.node.rect_position)
+	node.rect_min_size = Vector2(1, 1)
+	node.rect_min_size = Vector2.ZERO
+
+	var initial_position := node.rect_position as Vector2
+	var target_position := _get_target_position(node.rect_position)
 
 	tween.interpolate_property(
-		node_info.node, "rect_position",
+		node, "rect_position",
 		initial_position, target_position,
 		duration,
 		_transition,
@@ -172,7 +178,7 @@ func _slide_out(node_info: Dictionary):
 	)
 	_unset_clickable(node_info)
 	yield(tween, "tween_all_completed")
-	node_info.node.modulate.a = 0.0
+	node.modulate.a = 0.0
 	layout.visible = false
 
 
