@@ -8,6 +8,9 @@ enum Anim {
 	SLIDE_UP,
 	SLIDE_DOWN,
 	FADE,
+	SCALE,
+	SCALE_VERTICAL,
+	SCALE_HORIZONTAL,
 }
 
 const DEFAULT_GROUP := "gui_transition"
@@ -96,6 +99,8 @@ func _show(id := ""):
 		for node_info in nodes:
 			if animation == Anim.FADE:
 				_fade_in(node_info)
+			elif animation in [Anim.SCALE, Anim.SCALE_HORIZONTAL, Anim.SCALE_VERTICAL]:
+				_scale_in(node_info)
 			else:
 				_slide_in(node_info)
 		tween.start()
@@ -108,6 +113,8 @@ func _hide(id := "", function: FuncRef = null, args := []):
 		for node_info in nodes:
 			if animation == Anim.FADE:
 				_fade_out(node_info)
+			elif animation in [Anim.SCALE, Anim.SCALE_HORIZONTAL, Anim.SCALE_VERTICAL]:
+				_scale_out(node_info)
 			else:
 				_slide_out(node_info)
 
@@ -139,7 +146,6 @@ func _slide_in(node_info: Dictionary):
 		node_info.delay
 	)
 
-#	var initial_position := node_info.node.rect_position as Vector2
 	var target_position := _get_target_position(node_info.node.rect_position)
 
 	tween.interpolate_property(
@@ -204,6 +210,52 @@ func _fade_out(node_info: Dictionary):
 	_unset_clickable(node_info)
 
 
+func _scale_in(node_info: Dictionary):
+	layout.visible = true
+
+	# Bring alpha up
+	tween.interpolate_property(
+		node_info.node, "modulate:a",
+		0.0, 1.0,
+		alpha_delay,
+		Tween.TRANS_QUAD,
+		Tween.EASE_IN_OUT,
+		node_info.delay
+	)
+
+	var target_scale := _get_target_scale(node_info.initial_scale)
+
+	tween.interpolate_property(
+		node_info.node, "rect_scale",
+		target_scale, node_info.initial_scale,
+		duration,
+		_transition,
+		_ease,
+		node_info.delay
+	)
+	_unset_clickable(node_info)
+	yield(tween, "tween_all_completed")
+	_revert_clickable(node_info)
+
+
+func _scale_out(node_info: Dictionary):
+	var initial_scale := node_info.node.rect_scale as Vector2
+	var target_scale := _get_target_scale(initial_scale)
+
+	tween.interpolate_property(
+		node_info.node, "rect_scale",
+		initial_scale, target_scale,
+		duration,
+		_transition,
+		_ease,
+		node_info.delay
+	)
+	_unset_clickable(node_info)
+	yield(tween, "tween_all_completed")
+	node_info.node.modulate.a = 0.0
+	layout.visible = false
+
+
 # Helpers
 func _get_group_nodes():
 	nodes.clear()
@@ -221,6 +273,7 @@ func _get_node_info(node: Control, index := 0) -> Dictionary:
 		"node": node,
 		"name": node.name,
 		"initial_position": Vector2(node.rect_position),
+		"initial_scale": Vector2(node.rect_scale),
 		"initial_mouse_filter": node.mouse_filter,
 		"delay": index * delay,
 	}
@@ -241,6 +294,18 @@ func _get_target_position(initial_position: Vector2) -> Vector2:
 			offset.y = view_size.y + initial_position.y
 
 	return initial_position + offset
+
+
+func _get_target_scale(initial_scale: Vector2) -> Vector2:
+	var target_scale := Vector2.ZERO
+
+	if animation == Anim.SCALE_HORIZONTAL:
+		target_scale.y = initial_scale.y
+
+	elif animation == Anim.SCALE_VERTICAL:
+		target_scale.x = initial_scale.x
+
+	return target_scale
 
 
 func _unset_clickable(node_info: Dictionary):
