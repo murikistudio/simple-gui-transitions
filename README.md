@@ -72,7 +72,6 @@ Both signals `hide_completed` and `show_completed` are emited accordingly.
 #### show(id: String)
 The method `show` shows the layout with the given `id`.
 Emits the signal `show_completed` on completion.
-.
 
 #### hide(id: String)
 The method `hide` hides the layout with the given `id`, or all visible layouts if no `id` is passed in.
