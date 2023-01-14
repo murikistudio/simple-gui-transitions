@@ -22,7 +22,7 @@ var alpha_delay := 0.09
 
 export var auto_start := true
 export var layout_id := ""
-export(Anim) var animation := Anim.SLIDE_LEFT
+export(Anim) var animation := Anim.FADE
 export(float, 0.1, 2.0, 0.01) var duration := 0.3
 export(NodePath) var _layout: NodePath
 export(NodePath) var _group: NodePath
