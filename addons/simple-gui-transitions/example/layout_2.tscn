@@ -13,6 +13,7 @@ script = ExtResource( 1 )
 [node name="GuiTransition" type="Node" parent="."]
 script = ExtResource( 2 )
 layout_id = "Layout2"
+animation = 6
 duration = 0.5
 _layout = NodePath("..")
 _group = NodePath("../HBoxContainer/VBoxContainer")
