@@ -15,14 +15,14 @@ _global_script_classes=[ {
 "path": "res://addons/simple-gui-transitions/transition.gd"
 } ]
 _global_script_class_icons={
-"GuiTransition": "res://addons/simple-gui-transitions/icon.svg"
+"GuiTransition": "res://addons/simple-gui-transitions/icon.png"
 }
 
 [application]
 
 config/name="Simple GUI Transitions"
 run/main_scene="res://addons/simple-gui-transitions/example/main.tscn"
-config/icon="res://addons/simple-gui-transitions/icon.svg"
+config/icon="res://icon.png"
 
 [autoload]
 

@@ -1,4 +1,4 @@
-class_name GuiTransition, "res://addons/simple-gui-transitions/icon.svg"
+class_name GuiTransition, "res://addons/simple-gui-transitions/icon.png"
 extends Node
 
 
