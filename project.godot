@@ -22,7 +22,7 @@ _global_script_class_icons={
 
 config/name="Simple GUI Transitions"
 run/main_scene="res://addons/simple-gui-transitions/example/main.tscn"
-config/icon="res://icon.png"
+config/icon="res://addons/simple-gui-transitions/icon.png"
 
 [autoload]
 
