@@ -2,6 +2,11 @@ class_name GuiTransition, "res://addons/simple-gui-transitions/icon.png"
 extends Node
 
 
+# Constants
+const DEFAULT_GROUP := "gui_transition"
+
+
+# Enums
 enum Anim {
 	SLIDE_LEFT,
 	SLIDE_RIGHT,
@@ -13,13 +18,8 @@ enum Anim {
 	SCALE_HORIZONTAL,
 }
 
-const DEFAULT_GROUP := "gui_transition"
 
-var _transition := Tween.TRANS_QUAD
-var _ease := Tween.EASE_IN_OUT
-var nodes := []
-var alpha_delay := 0.09
-
+# Variables
 export var auto_start := true
 export var layout_id := ""
 export(Anim) var animation := Anim.FADE
@@ -40,20 +40,27 @@ export(
 	"CIRC",
 	"BOUNCE",
 	"BACK"
-	) var transition_type := "QUAD"
+) var transition_type := "QUAD"
+
 export(
 	String,
 	"IN",
 	"OUT",
 	"IN_OUT",
 	"OUT_IN"
-	) var ease_type := "IN_OUT"
+) var ease_type := "IN_OUT"
+
+var _transition := Tween.TRANS_QUAD
+var _ease := Tween.EASE_IN_OUT
+var nodes := []
+var alpha_delay := 0.09
 
 onready var layout: Control = get_node(_layout) if _layout else null
 onready var group: Control = get_node(_group) if _group else null
 onready var tween: Tween = Tween.new()
 
 
+# Built-in overrides
 func _ready() -> void:
 	_transition = tween.get("TRANS_" + transition_type)
 	_ease = tween.get("EASE_" + ease_type)
@@ -73,6 +80,7 @@ func _ready() -> void:
 
 
 # Private methods
+# Handles the singleton go_to calls.
 func _go_to(id := "", function: FuncRef = null, args := []):
 	if not id:
 		return
@@ -86,6 +94,7 @@ func _go_to(id := "", function: FuncRef = null, args := []):
 			get_tree().call_group(DEFAULT_GROUP, "_show", id)
 
 
+# Handles the singleton update calls.
 func _update(function: FuncRef = null, args := []):
 	if _transition_valid() and layout.visible:
 
@@ -94,6 +103,7 @@ func _update(function: FuncRef = null, args := []):
 		_show(layout_id)
 
 
+# Handles the singleton show calls.
 func _show(id := ""):
 	if _transition_valid() and (not id or id == layout_id):
 		for node_info in nodes:
@@ -108,6 +118,7 @@ func _show(id := ""):
 		GuiTransitions.emit_signal("show_completed")
 
 
+# Handles the singleton hide calls.
 func _hide(id := "", function: FuncRef = null, args := []):
 	if _transition_valid() and layout.visible and (not id or id == layout_id):
 		for node_info in nodes:
@@ -129,10 +140,12 @@ func _hide(id := "", function: FuncRef = null, args := []):
 
 
 # Abstraction methods
+# Returns if it's possible to perform transition.
 func _transition_valid() -> bool:
 	return group and layout
 
 
+# Performs the slide in transition.
 func _slide_in(node_info: Dictionary):
 	layout.visible = true
 
@@ -161,6 +174,7 @@ func _slide_in(node_info: Dictionary):
 	_revert_clickable(node_info)
 
 
+# Performs the slide out transition.
 func _slide_out(node_info: Dictionary):
 	node_info.node.rect_min_size = Vector2(1, 1)
 	node_info.node.rect_min_size = Vector2.ZERO
@@ -182,6 +196,7 @@ func _slide_out(node_info: Dictionary):
 	layout.visible = false
 
 
+# Performs the fade in transition.
 func _fade_in(node_info: Dictionary):
 	layout.visible = true
 
@@ -198,6 +213,7 @@ func _fade_in(node_info: Dictionary):
 	_revert_clickable(node_info)
 
 
+# Performs the fade out transition.
 func _fade_out(node_info: Dictionary):
 	tween.interpolate_property(
 		node_info.node, "modulate:a",
@@ -210,6 +226,7 @@ func _fade_out(node_info: Dictionary):
 	_unset_clickable(node_info)
 
 
+# Performs the scale in transition.
 func _scale_in(node_info: Dictionary):
 	layout.visible = true
 
@@ -238,6 +255,7 @@ func _scale_in(node_info: Dictionary):
 	_revert_clickable(node_info)
 
 
+# Performs the scale out transition.
 func _scale_out(node_info: Dictionary):
 	var initial_scale := node_info.node.rect_scale as Vector2
 	var target_scale := _get_target_scale(initial_scale)
@@ -257,6 +275,7 @@ func _scale_out(node_info: Dictionary):
 
 
 # Helpers
+# Get children nodes from transition group.
 func _get_group_nodes():
 	nodes.clear()
 	var i := 0
@@ -268,6 +287,7 @@ func _get_group_nodes():
 			i += 1
 
 
+# Returns the node info to perform transitions.
 func _get_node_info(node: Control, index := 0) -> Dictionary:
 	return {
 		"node": node,
@@ -279,6 +299,7 @@ func _get_node_info(node: Control, index := 0) -> Dictionary:
 	}
 
 
+# Get the out-of-screen position of node according to the animation type.
 func _get_target_position(initial_position: Vector2) -> Vector2:
 	var view_size := get_viewport().size
 	var offset := Vector2.ZERO
@@ -296,6 +317,7 @@ func _get_target_position(initial_position: Vector2) -> Vector2:
 	return initial_position + offset
 
 
+# Get the zero scale of node according to the animation type.
 func _get_target_scale(initial_scale: Vector2) -> Vector2:
 	var target_scale := Vector2.ZERO
 
@@ -308,14 +330,17 @@ func _get_target_scale(initial_scale: Vector2) -> Vector2:
 	return target_scale
 
 
+# Set node to unclickable while in transition.
 func _unset_clickable(node_info: Dictionary):
 	node_info.node.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
+# Revert initial node clickable value after transition.
 func _revert_clickable(node_info: Dictionary):
 	node_info.node.mouse_filter = node_info.initial_mouse_filter
 
 
+# Hide children nodes at startup.
 func _init_children():
 	if auto_start:
 		for node_info in nodes:
