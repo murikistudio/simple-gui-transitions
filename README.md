@@ -8,6 +8,8 @@
 This plugin gives access to the `GuiTransition` node which allows to transition between multiple GUI layouts easily. Designed for Godot 3.5.x.
 See the example scene on `addons/simple-gui-transitions/example` to see it in action.
 
+[Download it on Godot Asset Library](https://godotengine.org/asset-library/asset/1613)
+
 ## Node `GuiTransition`
 The node `GuiTransition` is responsible for transitioning a specific layout.
 
