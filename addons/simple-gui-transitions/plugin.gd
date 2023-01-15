@@ -2,12 +2,13 @@ tool
 extends EditorPlugin
 
 
-var _singleton_path := "res://addons/simple-gui-transitions/singleton.gd"
+const SINGLETON_NAME := "GuiTransitions"
+const SINGLETON_PATH := "res://addons/simple-gui-transitions/singleton.gd"
 
 
 func _enter_tree() -> void:
-	add_autoload_singleton("GuiTransitions", _singleton_path)
+	add_autoload_singleton(SINGLETON_NAME, SINGLETON_PATH)
 
 
 func _exit_tree() -> void:
-	remove_autoload_singleton(_singleton_path)
+	remove_autoload_singleton(SINGLETON_NAME)
