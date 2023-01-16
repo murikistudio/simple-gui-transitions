@@ -28,6 +28,10 @@ config/icon="res://addons/simple-gui-transitions/icon.png"
 
 GuiTransitions="*res://addons/simple-gui-transitions/singleton.gd"
 
+[debug]
+
+gdscript/warnings/return_value_discarded=false
+
 [editor_plugins]
 
 enabled=PoolStringArray( "res://addons/simple-gui-transitions/plugin.cfg" )

@@ -13,10 +13,12 @@ script = ExtResource( 1 )
 [node name="GuiTransition" type="Node" parent="."]
 script = ExtResource( 2 )
 layout_id = "Layout1"
+animation = 0
 duration = 0.5
 _layout = NodePath("..")
 _group = NodePath("../HBoxContainer/VBoxContainer")
 delay = 0.1
+center_pivot = true
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 anchor_right = 1.0
