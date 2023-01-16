@@ -3,7 +3,7 @@ extends Node
 
 
 # Inner classes
-class NodeInfo extends Resource:
+class NodeInfo extends Reference:
 	var node: Control
 	var name: String
 	var initial_position: Vector2
