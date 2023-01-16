@@ -342,6 +342,10 @@ func _revert_clickable(node_info: Dictionary):
 
 # Hide children nodes at startup.
 func _init_children():
-	if auto_start:
-		for node_info in nodes:
-			node_info.node.modulate.a = 0.0
+	for node_info in nodes:
+		var _node: Control = node_info.node
+
+		_node.material = preload("res://addons/simple-gui-transitions/materials/transform.tres").duplicate()
+
+		if auto_start:
+			_node.modulate.a = 0.0
