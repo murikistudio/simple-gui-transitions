@@ -18,6 +18,7 @@ func _on_Button_pressed() -> void:
 
 	for i in range(_controls.size()):
 		var control: Control = _controls[i]
+		control.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var delay := 0.15 * i
 
 		_tween.set_ease(Tween.EASE_IN_OUT)
@@ -46,8 +47,13 @@ func _on_Button_pressed() -> void:
 		)
 		_tween.parallel()
 
+	yield(_tween, "finished")
+
+	for i in range(_controls.size()):
+		var control: Control = _controls[i]
+		control.mouse_filter = Control.MOUSE_FILTER_STOP
+
 
 
 func _set_param_slide(value: Vector2, control: Control) -> void:
-	print(value)
 	(control.material as ShaderMaterial).set_shader_param("slide", value)
