@@ -2,6 +2,19 @@ class_name GuiTransition, "res://addons/simple-gui-transitions/icon.png"
 extends Node
 
 
+# Enums
+enum Anim {
+	SLIDE_LEFT,
+	SLIDE_RIGHT,
+	SLIDE_UP,
+	SLIDE_DOWN,
+	FADE,
+	SCALE,
+	SCALE_VERTICAL,
+	SCALE_HORIZONTAL,
+}
+
+
 # Inner classes
 class NodeInfo extends Reference:
 	var node: Control
@@ -11,16 +24,26 @@ class NodeInfo extends Reference:
 	var initial_mouse_filter: int
 	var animation: int
 	var delay: float
+	var center_pivot: bool
 
-	func _init(_node: Control, _delay: float, _animation: int, _auto_start: bool) -> void:
+	func _init(
+		_node: Control,
+		_delay: float,
+		_animation: int,
+		_auto_start: bool,
+		_center_pivot: bool
+	) -> void:
 		node = _node
 		name = node.name
-		initial_position = Vector2(node.rect_position)
+		initial_position = Vector2.ZERO
 		initial_scale = Vector2(node.rect_scale)
 		initial_mouse_filter = node.mouse_filter
 		animation = _animation
 		delay = _delay
-		node.material = MaterialTransform.duplicate()
+		center_pivot = _center_pivot
+
+		if _animation in [Anim.SLIDE_LEFT, Anim.SLIDE_RIGHT, Anim.SLIDE_UP, Anim.SLIDE_DOWN]:
+			node.material = MaterialTransform.duplicate()
 
 		if _auto_start:
 			node.modulate.a = 0.0
@@ -52,33 +75,30 @@ class NodeInfo extends Reference:
 
 		match animation:
 			Anim.SLIDE_LEFT:
-				offset.x = initial_position.x - view_size.x
+				offset.x = -view_size.x * 2.0
 			Anim.SLIDE_RIGHT:
-				offset.x = initial_position.x + view_size.x
+				offset.x = view_size.x * 2.0
 			Anim.SLIDE_UP:
-				offset.y = -view_size.y
+				offset.y = -view_size.y * 2.0
 			Anim.SLIDE_DOWN:
-				offset.y = view_size.y + initial_position.y
+				offset.y = view_size.y * 2.0
 
-		return initial_position + offset
+		return offset
+
+	func set_pivot_to_center() -> void:
+		if center_pivot:
+			node.rect_pivot_offset = node.rect_size / 2
+
+	func set_position(value) -> void:
+		var _shader := node.material as ShaderMaterial
+
+		if _shader:
+			_shader.set_shader_param("slide", value)
 
 
 # Constants
 const MaterialTransform := preload("res://addons/simple-gui-transitions/materials/transform.tres")
 const DEFAULT_GROUP := "gui_transition"
-
-
-# Enums
-enum Anim {
-	SLIDE_LEFT,
-	SLIDE_RIGHT,
-	SLIDE_UP,
-	SLIDE_DOWN,
-	FADE,
-	SCALE,
-	SCALE_VERTICAL,
-	SCALE_HORIZONTAL,
-}
 
 
 # Variables
@@ -111,6 +131,7 @@ export(
 	"IN_OUT",
 	"OUT_IN"
 ) var ease_type := "IN_OUT"
+export var center_pivot := false
 
 var _transition := Tween.TRANS_QUAD
 var _ease := Tween.EASE_IN_OUT
@@ -134,7 +155,7 @@ func _ready() -> void:
 		if not layout_id:
 			layout_id = layout.name
 
-		_get_group_nodes()
+		_get_node_infos()
 
 		if layout.visible and auto_start:
 			_show()
@@ -222,14 +243,15 @@ func _slide_in(node_info: NodeInfo):
 		node_info.delay
 	)
 
-	tween.interpolate_property(
-		node_info.node, "rect_position",
+	tween.interpolate_method(
+		node_info, "set_position",
 		node_info.get_target_position(), node_info.initial_position,
 		duration,
 		_transition,
 		_ease,
 		node_info.delay
 	)
+
 	node_info.unset_clickable()
 	yield(tween, "tween_all_completed")
 	node_info.revert_clickable()
@@ -240,16 +262,15 @@ func _slide_out(node_info: NodeInfo):
 	node_info.node.rect_min_size = Vector2(1, 1)
 	node_info.node.rect_min_size = Vector2.ZERO
 
-	var initial_position := node_info.node.rect_position as Vector2
-
-	tween.interpolate_property(
-		node_info.node, "rect_position",
-		initial_position, node_info.get_target_position(),
+	tween.interpolate_method(
+		node_info, "set_position",
+		node_info.initial_position, node_info.get_target_position(),
 		duration,
 		_transition,
 		_ease,
 		node_info.delay
 	)
+
 	node_info.unset_clickable()
 	yield(tween, "tween_all_completed")
 	node_info.node.modulate.a = 0.0
@@ -300,6 +321,8 @@ func _scale_in(node_info: NodeInfo):
 		node_info.delay
 	)
 
+	node_info.set_pivot_to_center()
+
 	tween.interpolate_property(
 		node_info.node, "rect_scale",
 		node_info.get_target_scale(), node_info.initial_scale,
@@ -317,6 +340,8 @@ func _scale_in(node_info: NodeInfo):
 func _scale_out(node_info: NodeInfo):
 	var initial_scale := node_info.node.rect_scale as Vector2
 
+	node_info.set_pivot_to_center()
+
 	tween.interpolate_property(
 		node_info.node, "rect_scale",
 		initial_scale, node_info.get_target_scale(),
@@ -325,6 +350,7 @@ func _scale_out(node_info: NodeInfo):
 		_ease,
 		node_info.delay
 	)
+
 	node_info.unset_clickable()
 	yield(tween, "tween_all_completed")
 	node_info.node.modulate.a = 0.0
@@ -332,12 +358,18 @@ func _scale_out(node_info: NodeInfo):
 
 
 # Get children nodes from transition group.
-func _get_group_nodes():
+func _get_node_infos():
 	var i := 0
 	nodes.clear()
 
 	for child in group.get_children():
 		if child.is_class("Control") and not child.get_class() == "Control":
-			var node_info := NodeInfo.new(child, i * delay, animation, auto_start)
+			var node_info := NodeInfo.new(
+				child,
+				i * delay,
+				animation,
+				auto_start,
+				center_pivot
+			)
 			nodes.push_back(node_info)
 			i += 1
