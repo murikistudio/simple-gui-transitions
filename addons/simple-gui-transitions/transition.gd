@@ -107,8 +107,11 @@ export var layout_id := ""
 export(Anim) var animation := Anim.FADE
 export(float, 0.1, 2.0, 0.01) var duration := 0.3
 export(NodePath) var _layout: NodePath
+export(Array, NodePath) var _controls := []
 export(NodePath) var _group: NodePath
 export(float, 0.0, 1.0, 0.01) var delay := 0.05
+export var center_pivot := false
+export(String, "IN", "OUT", "IN_OUT", "OUT_IN") var ease_type := "IN_OUT"
 export(
 	String,
 	"LINEAR",
@@ -123,15 +126,6 @@ export(
 	"BOUNCE",
 	"BACK"
 ) var transition_type := "QUAD"
-
-export(
-	String,
-	"IN",
-	"OUT",
-	"IN_OUT",
-	"OUT_IN"
-) var ease_type := "IN_OUT"
-export var center_pivot := false
 
 var _transition := Tween.TRANS_QUAD
 var _ease := Tween.EASE_IN_OUT
@@ -226,7 +220,7 @@ func _hide(id := "", function: FuncRef = null, args := []):
 # Abstraction methods
 # Returns if it's possible to perform transition.
 func _transition_valid() -> bool:
-	return group and layout
+	return (_controls.size() or group) and layout
 
 
 # Performs the slide in transition.
@@ -359,13 +353,18 @@ func _scale_out(node_info: NodeInfo):
 
 # Get children nodes from transition group.
 func _get_node_infos():
+	for i in range(_controls.size()):
+		_controls[i] = get_node(_controls[i]) if _controls[i] else null
+
 	var i := 0
+	var _nodes := _controls if _controls.size() else group.get_children()
+
 	nodes.clear()
 
-	for child in group.get_children():
-		if child.is_class("Control") and not child.get_class() == "Control":
+	for _node in _nodes:
+		if _node and _node.is_class("Control") and not _node.get_class() == "Control":
 			var node_info := NodeInfo.new(
-				child,
+				_node,
 				i * delay,
 				animation,
 				auto_start,
