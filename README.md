@@ -17,38 +17,50 @@ The node `GuiTransition` is responsible for transitioning a specific layout.
 #### Auto Start
 If the current layout will trigger its transition at startup.
 
-#### Layout ID
-ID of layout to trigger changes on the singleton `GuiTransitions` (at method parameters named `id`).
-If empty, will be assumed as the `Layout` node name.
+#### Animation Enter
+The animation type of the controls when entering the screen. The available animations are:
 
-#### Animation
-The animation type of the transition. The available animations are:
-
-- Slide left, right, up and down
 - Fade
+- Slide left, right, up and down
 - Scale vertical, horizontal and both
 
-_* Currently the slide animations only work properly if `display/window/stretch/mode` is set to `2D`._
+#### Animation Leave
+The animation type of the controls when leaving the screen. The available animations are:
+
+- Fade
+- Slide left, right, up and down
+- Scale vertical, horizontal and both
 
 #### Duration
 The total animation duration in seconds.
 
+#### Delay
+Delay between transitions for each node contained in `Group` or `Controls`.
+
+#### Layout ID
+ID of layout to trigger changes on the singleton `GuiTransitions` (at method parameters named `id`).
+If empty, will be assumed as the `Layout` node name.
+
 #### Layout
 The main layout node. It will be hidden and shown accordingly. Should be the topmost node of the current layout.
 
+#### Controls
+Array of individual nodes to be animated.
+The order will be taken in account to apply the animation `Delay`.
+
 #### Group
 A node with children controls to be animated in sequence.
-Example: a `HBoxContainer` or `VBoxContainer` with several buttons as children will allow to animate all of those buttons one by one.
-See the `Delay` property.
+The order will be taken in account to apply the animation `Delay`.
+Example: a `HBoxContainer` or `VBoxContainer` with several buttons as children will allow to animate all buttons one by one.
 
-#### Delay
-Delay between each `Group`'s children transitions.
-
-#### Transition Type
-Transition curve of the transition animation. Same as `Tween.TransitionType`.
+#### Center Pivot
+When `Animation Enter` or `Animation Leave` is one of the scale animations, it will center the control's pivot offset property.
 
 #### Ease Type
-Ease curve of the transition animation. Same as `Tween.EaseType`.
+Ease curve of the animations. Same as `Tween.EaseType`.
+
+#### Transition Type
+Transition curve of the animations. Same as `Tween.TransitionType`.
 
 ## Singleton `GuiTransitions`
 The singleton `GuiTransitions` allows to trigger the transitions globally and swap between GUI layouts.
