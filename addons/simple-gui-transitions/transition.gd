@@ -22,14 +22,14 @@ class NodeInfo extends Reference:
 	var initial_position: Vector2
 	var initial_scale: Vector2
 	var initial_mouse_filter: int
-	var animation: int
 	var delay: float
 	var center_pivot: bool
 
 	func _init(
 		_node: Control,
 		_delay: float,
-		_animation: int,
+		_animation_enter: int,
+		_animation_leave: int,
 		_auto_start: bool,
 		_center_pivot: bool
 	) -> void:
@@ -38,11 +38,17 @@ class NodeInfo extends Reference:
 		initial_position = Vector2.ZERO
 		initial_scale = Vector2(node.rect_scale)
 		initial_mouse_filter = node.mouse_filter
-		animation = _animation
 		delay = _delay
 		center_pivot = _center_pivot
 
-		if _animation in [Anim.SLIDE_LEFT, Anim.SLIDE_RIGHT, Anim.SLIDE_UP, Anim.SLIDE_DOWN]:
+		var shader_animations := [
+			Anim.SLIDE_LEFT,
+			Anim.SLIDE_RIGHT,
+			Anim.SLIDE_UP,
+			Anim.SLIDE_DOWN
+		]
+
+		if _animation_enter in shader_animations or _animation_leave in shader_animations:
 			node.material = MaterialTransform.duplicate()
 
 		if _auto_start:
@@ -57,7 +63,7 @@ class NodeInfo extends Reference:
 		node.mouse_filter = initial_mouse_filter
 
 	# Get the zero scale of node according to the animation type.
-	func get_target_scale() -> Vector2:
+	func get_target_scale(animation: int) -> Vector2:
 		var target_scale := Vector2.ZERO
 
 		if animation == Anim.SCALE_HORIZONTAL:
@@ -69,7 +75,7 @@ class NodeInfo extends Reference:
 		return target_scale
 
 	# Get the out-of-screen position of node according to the animation type.
-	func get_target_position() -> Vector2:
+	func get_target_position(animation: int) -> Vector2:
 		var view_size := node.get_viewport().size
 		var offset := Vector2.ZERO
 
@@ -103,13 +109,14 @@ const DEFAULT_GROUP := "gui_transition"
 
 # Variables
 export var auto_start := true
-export var layout_id := ""
-export(Anim) var animation := Anim.FADE
+export(Anim) var animation_enter := Anim.FADE
+export(Anim) var animation_leave := Anim.FADE
 export(float, 0.1, 2.0, 0.01) var duration := 0.3
-export(NodePath) var _layout: NodePath
+export(float, 0.0, 1.0, 0.01) var delay := 0.05
+export var layout_id := ""
+export(NodePath) var layout: NodePath
 export(Array, NodePath) var _controls := []
 export(NodePath) var _group: NodePath
-export(float, 0.0, 1.0, 0.01) var delay := 0.05
 export var center_pivot := false
 export(String, "IN", "OUT", "IN_OUT", "OUT_IN") var ease_type := "IN_OUT"
 export(
@@ -132,13 +139,16 @@ var _ease := Tween.EASE_IN_OUT
 var nodes := []
 var alpha_delay := 0.09
 
-onready var layout: Control = get_node(_layout) if _layout else null
+onready var _layout: Control = get_node(layout) if layout else null
 onready var group: Control = get_node(_group) if _group else null
 onready var tween: Tween = Tween.new()
 
 
 # Built-in overrides
 func _ready() -> void:
+	if Engine.editor_hint:
+		return
+
 	_transition = tween.get("TRANS_" + transition_type)
 	_ease = tween.get("EASE_" + ease_type)
 
@@ -147,11 +157,11 @@ func _ready() -> void:
 
 	if _transition_valid():
 		if not layout_id:
-			layout_id = layout.name
+			layout_id = _layout.name
 
 		_get_node_infos()
 
-		if layout.visible and auto_start:
+		if _layout.visible and auto_start:
 			_show()
 
 
@@ -161,7 +171,7 @@ func _go_to(id := "", function: FuncRef = null, args := []):
 	if not id:
 		return
 
-	if _transition_valid() and layout.visible:
+	if _transition_valid() and _layout.visible:
 		if id != layout_id:
 			_hide("", function, args)
 			yield(tween, "tween_all_completed")
@@ -172,7 +182,7 @@ func _go_to(id := "", function: FuncRef = null, args := []):
 
 # Handles the singleton update calls.
 func _update(function: FuncRef = null, args := []):
-	if _transition_valid() and layout.visible:
+	if _transition_valid() and _layout.visible:
 
 		_hide(layout_id, function, args)
 		yield(tween, "tween_all_completed")
@@ -185,9 +195,9 @@ func _show(id := ""):
 		for _node_info in nodes:
 			var node_info: NodeInfo = _node_info
 
-			if animation == Anim.FADE:
+			if animation_enter == Anim.FADE:
 				_fade_in(node_info)
-			elif animation in [Anim.SCALE, Anim.SCALE_HORIZONTAL, Anim.SCALE_VERTICAL]:
+			elif animation_enter in [Anim.SCALE, Anim.SCALE_HORIZONTAL, Anim.SCALE_VERTICAL]:
 				_scale_in(node_info)
 			else:
 				_slide_in(node_info)
@@ -198,11 +208,11 @@ func _show(id := ""):
 
 # Handles the singleton hide calls.
 func _hide(id := "", function: FuncRef = null, args := []):
-	if _transition_valid() and layout.visible and (not id or id == layout_id):
+	if _transition_valid() and _layout.visible and (not id or id == layout_id):
 		for node_info in nodes:
-			if animation == Anim.FADE:
+			if animation_leave == Anim.FADE:
 				_fade_out(node_info)
-			elif animation in [Anim.SCALE, Anim.SCALE_HORIZONTAL, Anim.SCALE_VERTICAL]:
+			elif animation_leave in [Anim.SCALE, Anim.SCALE_HORIZONTAL, Anim.SCALE_VERTICAL]:
 				_scale_out(node_info)
 			else:
 				_slide_out(node_info)
@@ -214,7 +224,7 @@ func _hide(id := "", function: FuncRef = null, args := []):
 			function.call_funcv(args)
 
 		GuiTransitions.emit_signal("hide_completed")
-		layout.visible = false
+		_layout.visible = false
 
 
 # Abstraction methods
@@ -225,7 +235,7 @@ func _transition_valid() -> bool:
 
 # Performs the slide in transition.
 func _slide_in(node_info: NodeInfo):
-	layout.visible = true
+	_layout.visible = true
 
 	# Bring alpha up
 	tween.interpolate_property(
@@ -239,7 +249,7 @@ func _slide_in(node_info: NodeInfo):
 
 	tween.interpolate_method(
 		node_info, "set_position",
-		node_info.get_target_position(), node_info.initial_position,
+		node_info.get_target_position(animation_enter), node_info.initial_position,
 		duration,
 		_transition,
 		_ease,
@@ -258,7 +268,7 @@ func _slide_out(node_info: NodeInfo):
 
 	tween.interpolate_method(
 		node_info, "set_position",
-		node_info.initial_position, node_info.get_target_position(),
+		node_info.initial_position, node_info.get_target_position(animation_leave),
 		duration,
 		_transition,
 		_ease,
@@ -268,12 +278,12 @@ func _slide_out(node_info: NodeInfo):
 	node_info.unset_clickable()
 	yield(tween, "tween_all_completed")
 	node_info.node.modulate.a = 0.0
-	layout.visible = false
+	_layout.visible = false
 
 
 # Performs the fade in transition.
 func _fade_in(node_info: NodeInfo):
-	layout.visible = true
+	_layout.visible = true
 
 	tween.interpolate_property(
 		node_info.node, "modulate:a",
@@ -303,7 +313,7 @@ func _fade_out(node_info: NodeInfo):
 
 # Performs the scale in transition.
 func _scale_in(node_info: NodeInfo):
-	layout.visible = true
+	_layout.visible = true
 
 	# Bring alpha up
 	tween.interpolate_property(
@@ -319,7 +329,7 @@ func _scale_in(node_info: NodeInfo):
 
 	tween.interpolate_property(
 		node_info.node, "rect_scale",
-		node_info.get_target_scale(), node_info.initial_scale,
+		node_info.get_target_scale(animation_enter), node_info.initial_scale,
 		duration,
 		_transition,
 		_ease,
@@ -338,7 +348,7 @@ func _scale_out(node_info: NodeInfo):
 
 	tween.interpolate_property(
 		node_info.node, "rect_scale",
-		initial_scale, node_info.get_target_scale(),
+		initial_scale, node_info.get_target_scale(animation_leave),
 		duration,
 		_transition,
 		_ease,
@@ -348,7 +358,7 @@ func _scale_out(node_info: NodeInfo):
 	node_info.unset_clickable()
 	yield(tween, "tween_all_completed")
 	node_info.node.modulate.a = 0.0
-	layout.visible = false
+	_layout.visible = false
 
 
 # Get children nodes from transition group.
@@ -366,7 +376,8 @@ func _get_node_infos():
 			var node_info := NodeInfo.new(
 				_node,
 				i * delay,
-				animation,
+				animation_enter,
+				animation_leave,
 				auto_start,
 				center_pivot
 			)
