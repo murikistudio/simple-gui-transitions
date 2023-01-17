@@ -194,6 +194,8 @@ func _update(function: FuncRef = null, args := []):
 # Handles the singleton show calls.
 func _show(id := ""):
 	if _transition_valid() and (not id or id == layout_id):
+		_layout.visible = true
+
 		for _node_info in _node_infos:
 			var node_info: NodeInfo = _node_info
 
@@ -226,8 +228,8 @@ func _hide(id := "", function: FuncRef = null, args := []):
 		if function:
 			function.call_funcv(args)
 
-		GuiTransitions.emit_signal("hide_completed")
 		_layout.visible = false
+		GuiTransitions.emit_signal("hide_completed")
 
 
 # Abstraction methods
@@ -238,8 +240,6 @@ func _transition_valid() -> bool:
 
 # Performs the slide in transition.
 func _slide_in(node_info: NodeInfo):
-	_layout.visible = true
-
 	# Bring alpha up
 	_tween.interpolate_property(
 		node_info.node, "modulate:a",
@@ -281,12 +281,10 @@ func _slide_out(node_info: NodeInfo):
 	node_info.unset_clickable()
 	yield(_tween, "tween_all_completed")
 	node_info.node.modulate.a = 0.0
-	_layout.visible = false
 
 
 # Performs the fade in transition.
 func _fade_in(node_info: NodeInfo):
-	_layout.visible = true
 	node_info.set_position(Vector2.ZERO)
 
 	_tween.interpolate_property(
@@ -317,7 +315,6 @@ func _fade_out(node_info: NodeInfo):
 
 # Performs the scale in transition.
 func _scale_in(node_info: NodeInfo):
-	_layout.visible = true
 	node_info.set_position(Vector2.ZERO)
 
 	# Bring alpha up
@@ -363,7 +360,6 @@ func _scale_out(node_info: NodeInfo):
 	node_info.unset_clickable()
 	yield(_tween, "tween_all_completed")
 	node_info.node.modulate.a = 0.0
-	_layout.visible = false
 
 
 # Get children nodes from transition group.
