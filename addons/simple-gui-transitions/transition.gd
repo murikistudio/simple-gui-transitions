@@ -108,6 +108,7 @@ const DEFAULT_GROUP := "gui_transition"
 
 
 # Variables
+# Public variables
 export var auto_start := true
 export(Anim) var animation_enter := Anim.FADE
 export(Anim) var animation_leave := Anim.FADE
@@ -115,8 +116,8 @@ export(float, 0.1, 2.0, 0.01) var duration := 0.3
 export(float, 0.0, 1.0, 0.01) var delay := 0.05
 export var layout_id := ""
 export(NodePath) var layout: NodePath
-export(Array, NodePath) var _controls := []
-export(NodePath) var _group: NodePath
+export(Array, NodePath) var controls := []
+export(NodePath) var group: NodePath
 export var center_pivot := false
 export(String, "IN", "OUT", "IN_OUT", "OUT_IN") var ease_type := "IN_OUT"
 export(
@@ -134,14 +135,15 @@ export(
 	"BACK"
 ) var transition_type := "QUAD"
 
+# Private variables
 var _transition := Tween.TRANS_QUAD
 var _ease := Tween.EASE_IN_OUT
-var nodes := []
-var alpha_delay := 0.09
+var _node_infos := []
+var _alpha_delay := 0.09
 
 onready var _layout: Control = get_node(layout) if layout else null
-onready var group: Control = get_node(_group) if _group else null
-onready var tween: Tween = Tween.new()
+onready var _group: Control = get_node(group) if group else null
+onready var _tween: Tween = Tween.new()
 
 
 # Built-in overrides
@@ -149,10 +151,10 @@ func _ready() -> void:
 	if Engine.editor_hint:
 		return
 
-	_transition = tween.get("TRANS_" + transition_type)
-	_ease = tween.get("EASE_" + ease_type)
+	_transition = _tween.get("TRANS_" + transition_type)
+	_ease = _tween.get("EASE_" + ease_type)
 
-	add_child(tween)
+	add_child(_tween)
 	add_to_group(DEFAULT_GROUP)
 
 	if _transition_valid():
@@ -174,7 +176,7 @@ func _go_to(id := "", function: FuncRef = null, args := []):
 	if _transition_valid() and _layout.visible:
 		if id != layout_id:
 			_hide("", function, args)
-			yield(tween, "tween_all_completed")
+			yield(_tween, "tween_all_completed")
 			get_tree().call_group(DEFAULT_GROUP, "_show", id)
 		else:
 			get_tree().call_group(DEFAULT_GROUP, "_show", id)
@@ -185,14 +187,14 @@ func _update(function: FuncRef = null, args := []):
 	if _transition_valid() and _layout.visible:
 
 		_hide(layout_id, function, args)
-		yield(tween, "tween_all_completed")
+		yield(_tween, "tween_all_completed")
 		_show(layout_id)
 
 
 # Handles the singleton show calls.
 func _show(id := ""):
 	if _transition_valid() and (not id or id == layout_id):
-		for _node_info in nodes:
+		for _node_info in _node_infos:
 			var node_info: NodeInfo = _node_info
 
 			if animation_enter == Anim.FADE:
@@ -201,15 +203,16 @@ func _show(id := ""):
 				_scale_in(node_info)
 			else:
 				_slide_in(node_info)
-		tween.start()
-		yield(tween, "tween_all_completed")
+
+		_tween.start()
+		yield(_tween, "tween_all_completed")
 		GuiTransitions.emit_signal("show_completed")
 
 
 # Handles the singleton hide calls.
 func _hide(id := "", function: FuncRef = null, args := []):
 	if _transition_valid() and _layout.visible and (not id or id == layout_id):
-		for node_info in nodes:
+		for node_info in _node_infos:
 			if animation_leave == Anim.FADE:
 				_fade_out(node_info)
 			elif animation_leave in [Anim.SCALE, Anim.SCALE_HORIZONTAL, Anim.SCALE_VERTICAL]:
@@ -217,8 +220,8 @@ func _hide(id := "", function: FuncRef = null, args := []):
 			else:
 				_slide_out(node_info)
 
-		tween.start()
-		yield(tween, "tween_all_completed")
+		_tween.start()
+		yield(_tween, "tween_all_completed")
 
 		if function:
 			function.call_funcv(args)
@@ -230,7 +233,7 @@ func _hide(id := "", function: FuncRef = null, args := []):
 # Abstraction methods
 # Returns if it's possible to perform transition.
 func _transition_valid() -> bool:
-	return (_controls.size() or group) and layout
+	return (controls.size() or _group) and layout
 
 
 # Performs the slide in transition.
@@ -238,16 +241,16 @@ func _slide_in(node_info: NodeInfo):
 	_layout.visible = true
 
 	# Bring alpha up
-	tween.interpolate_property(
+	_tween.interpolate_property(
 		node_info.node, "modulate:a",
 		0.0, 1.0,
-		alpha_delay,
+		_alpha_delay,
 		Tween.TRANS_QUAD,
 		Tween.EASE_IN_OUT,
 		node_info.delay
 	)
 
-	tween.interpolate_method(
+	_tween.interpolate_method(
 		node_info, "set_position",
 		node_info.get_target_position(animation_enter), node_info.initial_position,
 		duration,
@@ -257,7 +260,7 @@ func _slide_in(node_info: NodeInfo):
 	)
 
 	node_info.unset_clickable()
-	yield(tween, "tween_all_completed")
+	yield(_tween, "tween_all_completed")
 	node_info.revert_clickable()
 
 
@@ -266,7 +269,7 @@ func _slide_out(node_info: NodeInfo):
 	node_info.node.rect_min_size = Vector2(1, 1)
 	node_info.node.rect_min_size = Vector2.ZERO
 
-	tween.interpolate_method(
+	_tween.interpolate_method(
 		node_info, "set_position",
 		node_info.initial_position, node_info.get_target_position(animation_leave),
 		duration,
@@ -276,7 +279,7 @@ func _slide_out(node_info: NodeInfo):
 	)
 
 	node_info.unset_clickable()
-	yield(tween, "tween_all_completed")
+	yield(_tween, "tween_all_completed")
 	node_info.node.modulate.a = 0.0
 	_layout.visible = false
 
@@ -285,7 +288,7 @@ func _slide_out(node_info: NodeInfo):
 func _fade_in(node_info: NodeInfo):
 	_layout.visible = true
 
-	tween.interpolate_property(
+	_tween.interpolate_property(
 		node_info.node, "modulate:a",
 		0.0, 1.0,
 		duration,
@@ -294,13 +297,13 @@ func _fade_in(node_info: NodeInfo):
 		node_info.delay
 	)
 	node_info.unset_clickable()
-	yield(tween, "tween_all_completed")
+	yield(_tween, "tween_all_completed")
 	node_info.revert_clickable()
 
 
 # Performs the fade out transition.
 func _fade_out(node_info: NodeInfo):
-	tween.interpolate_property(
+	_tween.interpolate_property(
 		node_info.node, "modulate:a",
 		1.0, 0.0,
 		duration,
@@ -316,10 +319,10 @@ func _scale_in(node_info: NodeInfo):
 	_layout.visible = true
 
 	# Bring alpha up
-	tween.interpolate_property(
+	_tween.interpolate_property(
 		node_info.node, "modulate:a",
 		0.0, 1.0,
-		alpha_delay,
+		_alpha_delay,
 		Tween.TRANS_QUAD,
 		Tween.EASE_IN_OUT,
 		node_info.delay
@@ -327,7 +330,7 @@ func _scale_in(node_info: NodeInfo):
 
 	node_info.set_pivot_to_center()
 
-	tween.interpolate_property(
+	_tween.interpolate_property(
 		node_info.node, "rect_scale",
 		node_info.get_target_scale(animation_enter), node_info.initial_scale,
 		duration,
@@ -336,7 +339,7 @@ func _scale_in(node_info: NodeInfo):
 		node_info.delay
 	)
 	node_info.unset_clickable()
-	yield(tween, "tween_all_completed")
+	yield(_tween, "tween_all_completed")
 	node_info.revert_clickable()
 
 
@@ -346,7 +349,7 @@ func _scale_out(node_info: NodeInfo):
 
 	node_info.set_pivot_to_center()
 
-	tween.interpolate_property(
+	_tween.interpolate_property(
 		node_info.node, "rect_scale",
 		initial_scale, node_info.get_target_scale(animation_leave),
 		duration,
@@ -356,20 +359,20 @@ func _scale_out(node_info: NodeInfo):
 	)
 
 	node_info.unset_clickable()
-	yield(tween, "tween_all_completed")
+	yield(_tween, "tween_all_completed")
 	node_info.node.modulate.a = 0.0
 	_layout.visible = false
 
 
 # Get children nodes from transition group.
 func _get_node_infos():
-	for i in range(_controls.size()):
-		_controls[i] = get_node(_controls[i]) if _controls[i] else null
+	for i in range(controls.size()):
+		controls[i] = get_node(controls[i]) if controls[i] else null
 
 	var i := 0
-	var _nodes := _controls if _controls.size() else group.get_children()
+	var _nodes := controls if controls.size() else _group.get_children()
 
-	nodes.clear()
+	_node_infos.clear()
 
 	for _node in _nodes:
 		if _node and _node.is_class("Control") and not _node.get_class() == "Control":
@@ -381,5 +384,5 @@ func _get_node_infos():
 				auto_start,
 				center_pivot
 			)
-			nodes.push_back(node_info)
+			_node_infos.push_back(node_info)
 			i += 1
