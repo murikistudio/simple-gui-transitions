@@ -287,6 +287,7 @@ func _slide_out(node_info: NodeInfo):
 # Performs the fade in transition.
 func _fade_in(node_info: NodeInfo):
 	_layout.visible = true
+	node_info.set_position(Vector2.ZERO)
 
 	_tween.interpolate_property(
 		node_info.node, "modulate:a",
@@ -317,6 +318,7 @@ func _fade_out(node_info: NodeInfo):
 # Performs the scale in transition.
 func _scale_in(node_info: NodeInfo):
 	_layout.visible = true
+	node_info.set_position(Vector2.ZERO)
 
 	# Bring alpha up
 	_tween.interpolate_property(
