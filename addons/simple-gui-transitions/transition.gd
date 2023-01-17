@@ -15,6 +15,11 @@ enum Anim {
 }
 
 
+# Constants
+const MaterialTransform := preload("res://addons/simple-gui-transitions/materials/transform.tres")
+const DEFAULT_GROUP := "gui_transition"
+
+
 # Inner classes
 class NodeInfo extends Reference:
 	var node: Control
@@ -95,16 +100,11 @@ class NodeInfo extends Reference:
 		if center_pivot:
 			node.rect_pivot_offset = node.rect_size / 2
 
-	func set_position(value) -> void:
+	func set_position(position: Vector2) -> void:
 		var _shader := node.material as ShaderMaterial
 
 		if _shader:
-			_shader.set_shader_param("slide", value)
-
-
-# Constants
-const MaterialTransform := preload("res://addons/simple-gui-transitions/materials/transform.tres")
-const DEFAULT_GROUP := "gui_transition"
+			_shader.set_shader_param("slide", position)
 
 
 # Variables
@@ -119,7 +119,6 @@ export(NodePath) var layout: NodePath
 export(Array, NodePath) var controls := []
 export(NodePath) var group: NodePath
 export var center_pivot := false
-export(String, "IN", "OUT", "IN_OUT", "OUT_IN") var ease_type := "IN_OUT"
 export(
 	String,
 	"LINEAR",
@@ -134,6 +133,7 @@ export(
 	"BOUNCE",
 	"BACK"
 ) var transition_type := "QUAD"
+export(String, "IN", "OUT", "IN_OUT", "OUT_IN") var ease_type := "IN_OUT"
 
 # Private variables
 var _transition := Tween.TRANS_QUAD
