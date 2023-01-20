@@ -47,11 +47,13 @@ The main layout node. It will be hidden and shown accordingly. Should be the top
 #### Controls
 Array of individual nodes to be animated.
 The order will be taken in account to apply the animation `Delay`.
+If empty, a `Group` must be set.
 
 #### Group
 A node with children controls to be animated in sequence.
 The order will be taken in account to apply the animation `Delay`.
 Example: a `HBoxContainer` or `VBoxContainer` with several buttons as children will allow to animate all buttons one by one.
+If not set, `Controls` must be selected.
 
 #### Center Pivot
 When `Animation Enter` or `Animation Leave` is one of the scale animations, it will center the control's pivot offset property.
