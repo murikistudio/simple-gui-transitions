@@ -327,7 +327,11 @@ func _scale_in(node_info: NodeInfo):
 		node_info.delay
 	)
 
-	node_info.set_pivot_to_center()
+	_tween.interpolate_callback(
+		node_info,
+		node_info.delay + duration / 10.0,
+		"set_pivot_to_center"
+	)
 
 	_tween.interpolate_property(
 		node_info.node, "rect_scale",
@@ -337,7 +341,9 @@ func _scale_in(node_info: NodeInfo):
 		_ease,
 		node_info.delay
 	)
+
 	node_info.unset_clickable()
+
 	yield(_tween, "tween_all_completed")
 	node_info.revert_clickable()
 
@@ -346,7 +352,11 @@ func _scale_in(node_info: NodeInfo):
 func _scale_out(node_info: NodeInfo):
 	var initial_scale := node_info.node.rect_scale as Vector2
 
-	node_info.set_pivot_to_center()
+	_tween.interpolate_callback(
+		node_info,
+		node_info.delay + duration / 10.0,
+		"set_pivot_to_center"
+	)
 
 	_tween.interpolate_property(
 		node_info.node, "rect_scale",
