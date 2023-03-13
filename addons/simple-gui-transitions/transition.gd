@@ -110,6 +110,7 @@ class NodeInfo extends Reference:
 # Variables
 # Public variables
 export var auto_start := true
+export var fade_layout := false
 export(Anim) var animation_enter := Anim.FADE
 export(Anim) var animation_leave := Anim.FADE
 export(float, 0.1, 2.0, 0.01) var duration := 0.3
@@ -196,6 +197,9 @@ func _show(id := ""):
 	if _transition_valid() and (not id or id == layout_id):
 		_layout.visible = true
 
+		if fade_layout:
+			_fade_in_layout()
+
 		for _node_info in _node_infos:
 			var node_info: NodeInfo = _node_info
 
@@ -214,6 +218,9 @@ func _show(id := ""):
 # Handles the singleton hide calls.
 func _hide(id := "", function: FuncRef = null, args := []):
 	if _transition_valid() and _layout.visible and (not id or id == layout_id):
+		if fade_layout:
+			_fade_out_layout()
+
 		for node_info in _node_infos:
 			if animation_leave == Anim.FADE:
 				_fade_out(node_info)
@@ -370,6 +377,28 @@ func _scale_out(node_info: NodeInfo):
 	node_info.unset_clickable()
 	yield(_tween, "tween_all_completed")
 	node_info.node.modulate.a = 0.0
+
+
+# Gradually fade in the whole layout along with individual transitions.
+func _fade_in_layout() -> void:
+	_tween.interpolate_property(
+		_layout, "modulate:a",
+		0.0, 1.0,
+		duration,
+		_transition,
+		_ease
+	)
+
+
+# Gradually fade out the whole layout along with individual transitions.
+func _fade_out_layout() -> void:
+	_tween.interpolate_property(
+		_layout, "modulate:a",
+		1.0, 0.0,
+		duration,
+		_transition,
+		_ease
+	)
 
 
 # Get children nodes from transition group.
