@@ -28,11 +28,13 @@ class NodeInfo extends Reference:
 	var initial_scale: Vector2
 	var initial_mouse_filter: int
 	var delay: float
+	var duration: float
 	var center_pivot: bool
 
 	func _init(
 		_node: Control,
 		_delay: float,
+		_duration: float,
 		_animation_enter: int,
 		_animation_leave: int,
 		_auto_start: bool,
@@ -44,6 +46,7 @@ class NodeInfo extends Reference:
 		initial_scale = Vector2(node.rect_scale)
 		initial_mouse_filter = node.mouse_filter
 		delay = _delay
+		duration = _duration
 		center_pivot = _center_pivot
 
 		var shader_animations := [
@@ -113,8 +116,8 @@ export var auto_start := true
 export var fade_layout := false
 export(Anim) var animation_enter := Anim.FADE
 export(Anim) var animation_leave := Anim.FADE
-export(float, 0.1, 2.0, 0.01) var duration := 0.3
-export(float, 0.0, 1.0, 0.01) var delay := 0.05
+export(float, 0.1, 2.0, 0.01) var duration := 0.5
+export(float, 0.0, 1.0, 0.01) var delay := 1.0
 export var layout_id := ""
 export(NodePath) var layout: NodePath
 export(Array, NodePath) var controls := []
@@ -141,6 +144,7 @@ var _transition := Tween.TRANS_QUAD
 var _ease := Tween.EASE_IN_OUT
 var _node_infos := []
 var _alpha_delay := 0.09
+var _controls := []
 
 onready var _layout: Control = get_node(layout) if layout else null
 onready var _group: Control = get_node(group) if group else null
@@ -260,7 +264,7 @@ func _slide_in(node_info: NodeInfo):
 	_tween.interpolate_method(
 		node_info, "set_position",
 		node_info.get_target_position(animation_enter), node_info.initial_position,
-		duration,
+		node_info.duration,
 		_transition,
 		_ease,
 		node_info.delay
@@ -279,7 +283,7 @@ func _slide_out(node_info: NodeInfo):
 	_tween.interpolate_method(
 		node_info, "set_position",
 		node_info.initial_position, node_info.get_target_position(animation_leave),
-		duration,
+		node_info.duration,
 		_transition,
 		_ease,
 		node_info.delay
@@ -297,7 +301,7 @@ func _fade_in(node_info: NodeInfo):
 	_tween.interpolate_property(
 		node_info.node, "modulate:a",
 		0.0, 1.0,
-		duration,
+		node_info.duration,
 		_transition,
 		_ease,
 		node_info.delay
@@ -312,7 +316,7 @@ func _fade_out(node_info: NodeInfo):
 	_tween.interpolate_property(
 		node_info.node, "modulate:a",
 		1.0, 0.0,
-		duration,
+		node_info.duration,
 		_transition,
 		_ease,
 		node_info.delay
@@ -336,14 +340,14 @@ func _scale_in(node_info: NodeInfo):
 
 	_tween.interpolate_callback(
 		node_info,
-		node_info.delay + duration / 10.0,
+		node_info.delay + node_info.duration / 10.0,
 		"set_pivot_to_center"
 	)
 
 	_tween.interpolate_property(
 		node_info.node, "rect_scale",
 		node_info.get_target_scale(animation_enter), node_info.initial_scale,
-		duration,
+		node_info.duration,
 		_transition,
 		_ease,
 		node_info.delay
@@ -368,7 +372,7 @@ func _scale_out(node_info: NodeInfo):
 	_tween.interpolate_property(
 		node_info.node, "rect_scale",
 		initial_scale, node_info.get_target_scale(animation_leave),
-		duration,
+		node_info.duration,
 		_transition,
 		_ease,
 		node_info.delay
@@ -401,25 +405,47 @@ func _fade_out_layout() -> void:
 	)
 
 
-# Get children nodes from transition group.
+# Get children nodes from group children or controls array.
 func _get_node_infos():
-	for i in range(controls.size()):
-		controls[i] = get_node(controls[i]) if controls[i] else null
-
-	var i := 0
-	var _nodes := controls if controls.size() else _group.get_children()
-
+	_controls.clear()
 	_node_infos.clear()
 
-	for _node in _nodes:
-		if _node and _node.is_class("Control") and not _node.get_class() == "Control":
-			var node_info := NodeInfo.new(
-				_node,
-				i * delay,
-				animation_enter,
-				animation_leave,
-				auto_start,
-				center_pivot
-			)
-			_node_infos.push_back(node_info)
-			i += 1
+	for node_path in controls:
+		var node: Node = get_node(node_path) if node_path else null
+
+		if node:
+			_controls.push_back(node)
+
+	var nodes := _controls if _controls.size() else _group.get_children()
+	var filtered_nodes := []
+
+	for node in nodes:
+		if node and node.is_class("Control") and not node.get_class() == "Control":
+			filtered_nodes.push_back(node)
+
+	if not filtered_nodes.size():
+		prints("No group children or controls set on GuiTransition:", self)
+		return
+
+	var i := 0
+	var base_time := 1.0 / filtered_nodes.size() * duration
+	var inv_delay := range_lerp(delay, 0, 1, 1, 0)
+
+	for _node in filtered_nodes:
+		var current_delay := i * base_time * delay
+		current_delay = current_delay - current_delay / 2.0
+
+		var current_duration := base_time * 2.0 + base_time * 0.5
+		current_duration += (base_time * inv_delay) + (base_time / 2.0 * inv_delay)
+
+		var node_info := NodeInfo.new(
+			_node,
+			current_delay,
+			current_duration,
+			animation_enter,
+			animation_leave,
+			auto_start,
+			center_pivot
+		)
+		_node_infos.push_back(node_info)
+		i += 1
