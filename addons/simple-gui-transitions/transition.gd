@@ -145,6 +145,7 @@ var _ease := Tween.EASE_IN_OUT
 var _node_infos := []
 var _alpha_delay := 0.09
 var _controls := []
+var _debug := false
 
 onready var _layout: Control = get_node(layout) if layout else null
 onready var _group: Control = get_node(group) if group else null
@@ -405,10 +406,9 @@ func _fade_out_layout() -> void:
 	)
 
 
-# Get children nodes from group children or controls array.
-func _get_node_infos():
+# Get nodes from group or array of node paths set by the user.
+func _get_nodes_from_containers() -> Array:
 	_controls.clear()
-	_node_infos.clear()
 
 	for node_path in controls:
 		var node: Node = get_node(node_path) if node_path else null
@@ -423,13 +423,21 @@ func _get_node_infos():
 		if node and node.is_class("Control") and not node.get_class() == "Control":
 			filtered_nodes.push_back(node)
 
+	return filtered_nodes
+
+
+# Get children nodes from group children or controls array.
+func _get_node_infos() -> void:
+	var filtered_nodes := _get_nodes_from_containers()
+
 	if not filtered_nodes.size():
 		prints("No group children or controls set on GuiTransition:", self)
-		return
 
 	var i := 0
 	var base_time := 1.0 / filtered_nodes.size() * duration
-	var inv_delay := range_lerp(delay, 0, 1, 1, 0)
+	var inv_delay := 1.0 - delay
+
+	_node_infos.clear()
 
 	for _node in filtered_nodes:
 		var current_delay := i * base_time * delay
@@ -437,6 +445,15 @@ func _get_node_infos():
 
 		var current_duration := base_time * 2.0 + base_time * 0.5
 		current_duration += (base_time * inv_delay) + (base_time / 2.0 * inv_delay)
+
+		if _debug: prints(JSON.print({
+			"duration": duration,
+			"inv_delay": inv_delay,
+			"base_time": base_time,
+			"current_delay": current_delay,
+			"current_duration": current_duration,
+			"sum": current_delay + current_duration,
+		}))
 
 		var node_info := NodeInfo.new(
 			_node,
