@@ -142,7 +142,6 @@ export(String, "IN", "OUT", "IN_OUT", "OUT_IN") var ease_type := "IN_OUT"
 var _transition := Tween.TRANS_QUAD
 var _ease := Tween.EASE_IN_OUT
 var _node_infos := []
-var _alpha_delay := 0.09
 var _controls := []
 var _debug := false
 var _is_shown := false
@@ -288,15 +287,7 @@ func _transition_valid() -> bool:
 
 # Performs the slide in transition.
 func _slide_in(node_info: NodeInfo):
-	# Bring alpha up
-	_tween.interpolate_property(
-		node_info.node, "modulate:a",
-		0.0, 1.0,
-		_alpha_delay,
-		Tween.TRANS_QUAD,
-		Tween.EASE_IN_OUT,
-		node_info.delay
-	)
+	_fade_node(node_info, true)
 
 	_tween.interpolate_method(
 		node_info, "set_position",
@@ -365,15 +356,7 @@ func _fade_out(node_info: NodeInfo):
 func _scale_in(node_info: NodeInfo):
 	node_info.set_position(Vector2.ZERO)
 
-	# Bring alpha up
-	_tween.interpolate_property(
-		node_info.node, "modulate:a",
-		0.0, 1.0,
-		_alpha_delay,
-		Tween.TRANS_QUAD,
-		Tween.EASE_IN_OUT,
-		node_info.delay
-	)
+	_fade_node(node_info, true)
 
 	_tween.interpolate_callback(
 		node_info,
@@ -439,6 +422,20 @@ func _fade_out_layout() -> void:
 		duration,
 		_transition,
 		_ease
+	)
+
+
+# Fix of node pop-in in some cases.
+func _fade_node(node_info: NodeInfo, _in: bool) -> void:
+	var node_duration := node_info.duration / 2.0
+
+	_tween.interpolate_property(
+		node_info.node, "modulate:a",
+		0.0 if _in else 1.0, 1.0 if _in else 0.0,
+		node_duration,
+		Tween.TRANS_QUAD,
+		Tween.EASE_IN_OUT,
+		node_info.delay
 	)
 
 
