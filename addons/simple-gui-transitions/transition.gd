@@ -431,7 +431,7 @@ func _get_node_infos() -> void:
 	var filtered_nodes := _get_nodes_from_containers()
 
 	if not filtered_nodes.size():
-		prints("No group children or controls set on GuiTransition:", self)
+		push_warning("No group children or controls set on GuiTransition: " + str(self))
 
 	var base_duration := duration / filtered_nodes.size()
 	var inv_delay := 1.0 - delay
