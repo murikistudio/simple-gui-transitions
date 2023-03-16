@@ -175,6 +175,10 @@ func _ready() -> void:
 		if _layout.visible and auto_start:
 			_show()
 
+	else:
+		push_error("Invalid GuiTransition configuration: " + self.get_path())
+		queue_free()
+
 
 # Remove reference from singleton.
 func _exit_tree() -> void:
@@ -277,10 +281,10 @@ func _transition_valid() -> bool:
 	var controls_source_valid := bool(controls.size() or _group)
 
 	if not layout:
-		push_warning("A layout must be set on GuiTransition: " + str(self))
+		push_warning("A layout must be set on GuiTransition: " + self.get_path())
 
 	if not controls_source_valid:
-		push_warning("A list of controls or a group container must be set on GuiTransition: " + str(self))
+		push_warning("A list of controls or a group container must be set on GuiTransition: " + self.get_path())
 
 	return controls_source_valid and layout
 
@@ -464,7 +468,7 @@ func _get_node_infos() -> void:
 	var filtered_nodes := _get_nodes_from_containers()
 
 	if not filtered_nodes.size():
-		push_warning("No group children or controls set on GuiTransition: " + str(self))
+		push_warning("No valid group children or controls set on GuiTransition: " + self.get_path())
 
 	var base_duration := duration / filtered_nodes.size()
 	var inv_delay := 1.0 - delay
