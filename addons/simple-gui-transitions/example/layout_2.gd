@@ -10,4 +10,4 @@ func _on_ButtonHide_pressed() -> void:
 
 
 func _on_ButtonGoTo_pressed() -> void:
-	GuiTransitions.go_to("Layout1")
+	GuiTransitions.go_to("Layout3")

@@ -14,11 +14,8 @@ script = ExtResource( 1 )
 script = ExtResource( 2 )
 animation_enter = 0
 animation_leave = 1
-layout_id = "Layout1"
 layout = NodePath("..")
-fade_layout = true
 group = NodePath("../HBoxContainer/VBoxContainer")
-center_pivot = true
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 anchor_right = 1.0

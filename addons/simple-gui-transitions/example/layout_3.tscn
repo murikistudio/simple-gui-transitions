@@ -1,0 +1,140 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://addons/simple-gui-transitions/example/layout_3.gd" type="Script" id=1]
+[ext_resource path="res://addons/simple-gui-transitions/example/theme.tres" type="Theme" id=2]
+[ext_resource path="res://addons/simple-gui-transitions/transition.gd" type="Script" id=3]
+
+[node name="Layout3" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme = ExtResource( 2 )
+script = ExtResource( 1 )
+
+[node name="GuiTransition" type="Node" parent="."]
+script = ExtResource( 3 )
+animation_enter = 7
+animation_leave = 6
+layout = NodePath("..")
+group = NodePath("../VBoxContainer2")
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Label" type="Label" parent="VBoxContainer2"]
+margin_right = 960.0
+margin_bottom = 58.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.2
+text = "Delay Algorithm Test"
+align = 1
+valign = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer2"]
+margin_top = 62.0
+margin_right = 960.0
+margin_bottom = 121.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.2
+
+[node name="LabelDelay" type="Label" parent="VBoxContainer2/HBoxContainer"]
+margin_right = 180.0
+margin_bottom = 59.0
+rect_min_size = Vector2( 180, 0 )
+size_flags_vertical = 1
+text = "Delay"
+align = 1
+valign = 1
+clip_text = true
+
+[node name="SliderDelay" type="HSlider" parent="VBoxContainer2/HBoxContainer"]
+margin_left = 184.0
+margin_right = 434.0
+margin_bottom = 59.0
+rect_min_size = Vector2( 250, 0 )
+size_flags_vertical = 1
+max_value = 1.0
+step = 0.01
+
+[node name="LabelDuration" type="Label" parent="VBoxContainer2/HBoxContainer"]
+margin_left = 438.0
+margin_right = 618.0
+margin_bottom = 59.0
+rect_min_size = Vector2( 180, 0 )
+size_flags_vertical = 1
+text = "Duration"
+align = 1
+valign = 1
+clip_text = true
+
+[node name="SliderDuration" type="HSlider" parent="VBoxContainer2/HBoxContainer"]
+margin_left = 622.0
+margin_right = 872.0
+margin_bottom = 59.0
+rect_min_size = Vector2( 250, 0 )
+size_flags_vertical = 1
+min_value = 0.1
+max_value = 2.0
+step = 0.01
+value = 0.1
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer2"]
+margin_top = 125.0
+margin_right = 960.0
+margin_bottom = 418.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_constants/margin_right = 8
+custom_constants/margin_top = 8
+custom_constants/margin_left = 8
+custom_constants/margin_bottom = 8
+
+[node name="ContainerControls" type="VBoxContainer" parent="VBoxContainer2/MarginContainer"]
+margin_left = 8.0
+margin_top = 8.0
+margin_right = 952.0
+margin_bottom = 285.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="MarginContainer2" type="MarginContainer" parent="VBoxContainer2"]
+margin_top = 422.0
+margin_right = 960.0
+margin_bottom = 540.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.4
+custom_constants/margin_right = 8
+custom_constants/margin_top = 8
+custom_constants/margin_left = 8
+custom_constants/margin_bottom = 8
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer2/MarginContainer2"]
+margin_left = 8.0
+margin_top = 8.0
+margin_right = 952.0
+margin_bottom = 110.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="TextEditOutput" type="TextEdit" parent="VBoxContainer2/MarginContainer2/HBoxContainer"]
+margin_right = 752.0
+margin_bottom = 102.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ButtonGoTo" type="Button" parent="VBoxContainer2/MarginContainer2/HBoxContainer"]
+margin_left = 756.0
+margin_right = 944.0
+margin_bottom = 102.0
+focus_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.25
+text = "Go to layout 1"
+
+[connection signal="value_changed" from="VBoxContainer2/HBoxContainer/SliderDelay" to="." method="_on_SliderDelay_value_changed"]
+[connection signal="value_changed" from="VBoxContainer2/HBoxContainer/SliderDuration" to="." method="_on_SliderDuration_value_changed"]
+[connection signal="pressed" from="VBoxContainer2/MarginContainer2/HBoxContainer/ButtonGoTo" to="." method="_on_ButtonGoTo_pressed"]
