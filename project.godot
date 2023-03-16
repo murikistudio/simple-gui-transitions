@@ -32,6 +32,11 @@ GuiTransitions="*res://addons/simple-gui-transitions/singleton.gd"
 
 gdscript/warnings/return_value_discarded=false
 
+[display]
+
+window/size/width=960
+window/size/height=540
+
 [editor_plugins]
 
 enabled=PoolStringArray( "res://addons/simple-gui-transitions/plugin.cfg" )
