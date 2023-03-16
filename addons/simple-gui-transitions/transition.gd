@@ -17,7 +17,6 @@ enum Anim {
 
 # Constants
 const MaterialTransform := preload("res://addons/simple-gui-transitions/materials/transform.tres")
-const DEFAULT_GROUP := "gui_transition"
 
 
 # Inner classes
@@ -146,6 +145,7 @@ var _node_infos := []
 var _alpha_delay := 0.09
 var _controls := []
 var _debug := false
+var _is_shown := false
 
 onready var _layout: Control = get_node(layout) if layout else null
 onready var _group: Control = get_node(group) if group else null
@@ -154,23 +154,45 @@ onready var _tween: Tween = Tween.new()
 
 # Built-in overrides
 func _ready() -> void:
-	if Engine.editor_hint:
+	if Engine.is_editor_hint():
 		return
 
 	_transition = _tween.get("TRANS_" + transition_type)
 	_ease = _tween.get("EASE_" + ease_type)
 
 	add_child(_tween)
-	add_to_group(DEFAULT_GROUP)
 
 	if _transition_valid():
 		if not layout_id:
 			layout_id = _layout.name
 
+		if not GuiTransitions._layouts.has(layout_id):
+			GuiTransitions._layouts[layout_id] = []
+
+		GuiTransitions._layouts[layout_id].push_back(self)
+
 		_get_node_infos()
 
 		if _layout.visible and auto_start:
 			_show()
+
+
+# Remove reference from singleton.
+func _exit_tree() -> void:
+	var layouts: Array = GuiTransitions._layouts.get(layout_id, [])
+
+	if not layouts:
+		return
+
+	var index := layouts.find(self)
+
+	if index < 0:
+		return
+
+	layouts.remove(index)
+
+	if not layouts.size():
+		GuiTransitions._layouts.erase(layout_id)
 
 
 # Private methods
@@ -183,9 +205,9 @@ func _go_to(id := "", function: FuncRef = null, args := []):
 		if id != layout_id:
 			_hide("", function, args)
 			yield(_tween, "tween_all_completed")
-			get_tree().call_group(DEFAULT_GROUP, "_show", id)
+			GuiTransitions._for_each_layout("_show", [id])
 		else:
-			get_tree().call_group(DEFAULT_GROUP, "_show", id)
+			GuiTransitions._for_each_layout("_show", [id])
 
 
 # Handles the singleton update calls.
@@ -217,7 +239,10 @@ func _show(id := ""):
 
 		_tween.start()
 		yield(_tween, "tween_all_completed")
-		GuiTransitions.emit_signal("show_completed")
+		_is_shown = true
+
+		if GuiTransitions.is_shown(layout_id):
+			GuiTransitions.emit_signal("show_completed")
 
 
 # Handles the singleton hide calls.
@@ -241,13 +266,24 @@ func _hide(id := "", function: FuncRef = null, args := []):
 			function.call_funcv(args)
 
 		_layout.visible = false
-		GuiTransitions.emit_signal("hide_completed")
+		_is_shown = false
+
+		if not GuiTransitions.is_shown(layout_id):
+			GuiTransitions.emit_signal("hide_completed")
 
 
 # Abstraction methods
 # Returns if it's possible to perform transition.
 func _transition_valid() -> bool:
-	return (controls.size() or _group) and layout
+	var controls_source_valid := bool(controls.size() or _group)
+
+	if not layout:
+		push_warning("A layout must be set on GuiTransition: " + str(self))
+
+	if not controls_source_valid:
+		push_warning("A list of controls or a group container must be set on GuiTransition: " + str(self))
+
+	return controls_source_valid and layout
 
 
 # Performs the slide in transition.
