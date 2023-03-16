@@ -122,7 +122,7 @@ export var layout_id := ""
 export(NodePath) var layout: NodePath
 export(Array, NodePath) var controls := []
 export(NodePath) var group: NodePath
-export var center_pivot := false
+export var center_pivot := true
 export(
 	String,
 	"LINEAR",
