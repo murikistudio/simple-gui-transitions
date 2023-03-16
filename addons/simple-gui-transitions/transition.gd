@@ -117,7 +117,7 @@ export var fade_layout := false
 export(Anim) var animation_enter := Anim.FADE
 export(Anim) var animation_leave := Anim.FADE
 export(float, 0.1, 2.0, 0.01) var duration := 0.5
-export(float, 0.0, 1.0, 0.01) var delay := 1.0
+export(float, 0.0, 1.0, 0.01) var delay := 0.5
 export var layout_id := ""
 export(NodePath) var layout: NodePath
 export(Array, NodePath) var controls := []
@@ -433,36 +433,31 @@ func _get_node_infos() -> void:
 	if not filtered_nodes.size():
 		prints("No group children or controls set on GuiTransition:", self)
 
-	var i := 0
-	var base_time := 1.0 / filtered_nodes.size() * duration
+	var base_duration := duration / filtered_nodes.size()
 	var inv_delay := 1.0 - delay
 
 	_node_infos.clear()
 
-	for _node in filtered_nodes:
-		var current_delay := i * base_time * delay
-		current_delay = current_delay - current_delay / 2.0
-
-		var current_duration := base_time * 2.0 + base_time * 0.5
-		current_duration += (base_time * inv_delay) + (base_time / 2.0 * inv_delay)
+	for _i in filtered_nodes.size():
+		var i: int = _i
+		var current_delay := i * delay * base_duration
+		var current_duration := base_duration + base_duration * inv_delay * 3
 
 		if _debug: prints(JSON.print({
 			"duration": duration,
 			"inv_delay": inv_delay,
-			"base_time": base_time,
+			"base_duration": base_duration,
 			"current_delay": current_delay,
 			"current_duration": current_duration,
 			"sum": current_delay + current_duration,
 		}))
 
-		var node_info := NodeInfo.new(
-			_node,
+		_node_infos.push_back(NodeInfo.new(
+			filtered_nodes[i],
 			current_delay,
 			current_duration,
 			animation_enter,
 			animation_leave,
 			auto_start,
 			center_pivot
-		)
-		_node_infos.push_back(node_info)
-		i += 1
+		))
