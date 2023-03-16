@@ -33,17 +33,28 @@ func hide(id := "", function: FuncRef = null, args := []):
 
 # Returns if layout with the given id is visible.
 func is_shown(id: String) -> bool:
-	for layout_name in _layouts.keys():
-		if id != layout_name:
-			continue
+	if not _layouts.has(id):
+		push_error("Layout with given id does not exist: " + str(id))
+		return false
 
-		for layout in _layouts[layout_name]:
-			if not layout._is_shown:
-				return false
+	for layout in _layouts[id]:
+		if not layout._is_shown:
+			return false
 
+	return true
+
+
+# Returns if layout with the given id is hidden.
+func is_hidden(id: String) -> bool:
+	if not _layouts.has(id):
+		push_error("Layout with given id does not exist: " + str(id))
 		return true
 
-	return false
+	for layout in _layouts[id]:
+		if layout._is_shown:
+			return false
+
+	return true
 
 
 # Private methods

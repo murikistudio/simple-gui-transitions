@@ -14,6 +14,12 @@ enum Anim {
 	SCALE_HORIZONTAL,
 }
 
+enum Status {
+	OK,
+	SHOWING,
+	HIDING,
+}
+
 
 # Constants
 const MaterialTransform := preload("res://addons/simple-gui-transitions/materials/transform.tres")
@@ -145,6 +151,7 @@ var _node_infos := []
 var _controls := []
 var _debug := false
 var _is_shown := false
+var _status: int = Status.OK
 
 onready var _layout: Control = get_node(layout) if layout else null
 onready var _group: Control = get_node(group) if group else null
@@ -224,8 +231,9 @@ func _update(function: FuncRef = null, args := []):
 
 # Handles the singleton show calls.
 func _show(id := ""):
-	if _transition_valid() and (not id or id == layout_id):
+	if _transition_valid() and (not id or id == layout_id) and _status == Status.OK:
 		_layout.visible = true
+		_status = Status.SHOWING
 
 		if fade_layout:
 			_fade_in_layout()
@@ -243,6 +251,7 @@ func _show(id := ""):
 		_tween.start()
 		yield(_tween, "tween_all_completed")
 		_is_shown = true
+		_status = Status.OK
 
 		if GuiTransitions.is_shown(layout_id):
 			GuiTransitions.emit_signal("show_completed")
@@ -250,7 +259,9 @@ func _show(id := ""):
 
 # Handles the singleton hide calls.
 func _hide(id := "", function: FuncRef = null, args := []):
-	if _transition_valid() and _layout.visible and (not id or id == layout_id):
+	if _transition_valid() and _layout.visible and (not id or id == layout_id) and _status == Status.OK:
+		_status = Status.HIDING
+
 		if fade_layout:
 			_fade_out_layout()
 
@@ -270,8 +281,9 @@ func _hide(id := "", function: FuncRef = null, args := []):
 
 		_layout.visible = false
 		_is_shown = false
+		_status = Status.OK
 
-		if not GuiTransitions.is_shown(layout_id):
+		if GuiTransitions.is_hidden(layout_id):
 			GuiTransitions.emit_signal("hide_completed")
 
 
@@ -291,7 +303,7 @@ func _transition_valid() -> bool:
 
 # Performs the slide in transition.
 func _slide_in(node_info: NodeInfo):
-	_fade_node(node_info, true)
+	_fade_in_node(node_info)
 
 	_tween.interpolate_method(
 		node_info, "set_position",
@@ -360,7 +372,7 @@ func _fade_out(node_info: NodeInfo):
 func _scale_in(node_info: NodeInfo):
 	node_info.set_position(Vector2.ZERO)
 
-	_fade_node(node_info, true)
+	_fade_in_node(node_info)
 
 	_tween.interpolate_callback(
 		node_info,
@@ -430,12 +442,12 @@ func _fade_out_layout() -> void:
 
 
 # Fix of node pop-in in some cases.
-func _fade_node(node_info: NodeInfo, _in: bool) -> void:
-	var node_duration := node_info.duration / 2.0
+func _fade_in_node(node_info: NodeInfo) -> void:
+	var node_duration := max(node_info.duration / 3.0, 0.09)
 
 	_tween.interpolate_property(
 		node_info.node, "modulate:a",
-		0.0 if _in else 1.0, 1.0 if _in else 0.0,
+		0.0, 1.0,
 		node_duration,
 		Tween.TRANS_QUAD,
 		Tween.EASE_IN_OUT,
