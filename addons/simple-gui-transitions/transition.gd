@@ -443,6 +443,9 @@ func _get_node_infos() -> void:
 		var current_delay := i * delay * base_duration
 		var current_duration := base_duration + base_duration * inv_delay * 3
 
+		if filtered_nodes.size() == 1:
+			current_duration = duration
+
 		if _debug: prints(JSON.print({
 			"duration": duration,
 			"inv_delay": inv_delay,
