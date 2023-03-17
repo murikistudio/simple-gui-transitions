@@ -21,7 +21,7 @@ enum Status {
 }
 
 
-# Constants
+# Preloads
 const MaterialTransform := preload("res://addons/simple-gui-transitions/materials/transform.tres")
 
 
@@ -115,19 +115,30 @@ class NodeInfo extends Reference:
 			_shader.set_shader_param("slide", position)
 
 
+# Constants
+const SETTINGS_BASE := "gui_transitions/config/default/"
+const DEFAULT_DURATION := 0.5
+const DEFAULT_DELAY := 0.5
+const DEFAULT_CENTER_PIVOT := true
+const DEFAULT_AUTO_START := true
+const DEFAULT_FADE_LAYOUT := true
+const DEFAULT_TRANSITION_TYPE := "QUAD"
+const DEFAULT_EASE_TYPE := "IN_OUT"
+
+
 # Variables
 # Public variables
-export var auto_start := true
-export var fade_layout := false
+export var auto_start := DEFAULT_AUTO_START
+export var fade_layout := DEFAULT_FADE_LAYOUT
 export(Anim) var animation_enter := Anim.FADE
 export(Anim) var animation_leave := Anim.FADE
-export(float, 0.1, 2.0, 0.01) var duration := 0.5
-export(float, 0.0, 1.0, 0.01) var delay := 0.5
+export(float, 0.1, 2.0, 0.01) var duration := DEFAULT_DURATION
+export(float, 0.0, 1.0, 0.01) var delay := DEFAULT_DELAY
 export var layout_id := ""
 export(NodePath) var layout: NodePath
 export(Array, NodePath) var controls := []
 export(NodePath) var group: NodePath
-export var center_pivot := true
+export var center_pivot := DEFAULT_CENTER_PIVOT
 export(
 	String,
 	"LINEAR",
@@ -141,8 +152,8 @@ export(
 	"CIRC",
 	"BOUNCE",
 	"BACK"
-) var transition_type := "QUAD"
-export(String, "IN", "OUT", "IN_OUT", "OUT_IN") var ease_type := "IN_OUT"
+) var transition_type := DEFAULT_TRANSITION_TYPE
+export(String, "IN", "OUT", "IN_OUT", "OUT_IN") var ease_type := DEFAULT_EASE_TYPE
 
 # Private variables
 var _transition := Tween.TRANS_QUAD
