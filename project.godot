@@ -41,6 +41,18 @@ window/size/height=540
 
 enabled=PoolStringArray( "res://addons/simple-gui-transitions/plugin.cfg" )
 
+[gui_transitions]
+
+config/default/auto_start=true
+config/default/fade_layout=true
+config/default/center_pivot=true
+config/default/duration=0.5
+config/default/delay=0.5
+config/default/transition_type="QUAD"
+config/default/ease_type="IN_OUT"
+config/default/animation_enter=4
+config/default/animation_leave=4
+
 [physics]
 
 common/enable_pause_aware_picking=true

@@ -23,6 +23,7 @@ enum Status {
 
 # Preloads
 const MaterialTransform := preload("res://addons/simple-gui-transitions/materials/transform.tres")
+const DefaultValues := preload("res://addons/simple-gui-transitions/default_values.gd")
 
 
 # Inner classes
@@ -115,30 +116,19 @@ class NodeInfo extends Reference:
 			_shader.set_shader_param("slide", position)
 
 
-# Constants
-const SETTINGS_BASE := "gui_transitions/config/default/"
-const DEFAULT_DURATION := 0.5
-const DEFAULT_DELAY := 0.5
-const DEFAULT_CENTER_PIVOT := true
-const DEFAULT_AUTO_START := true
-const DEFAULT_FADE_LAYOUT := true
-const DEFAULT_TRANSITION_TYPE := "QUAD"
-const DEFAULT_EASE_TYPE := "IN_OUT"
-
-
 # Variables
 # Public variables
-export var auto_start := DEFAULT_AUTO_START
-export var fade_layout := DEFAULT_FADE_LAYOUT
+export var auto_start := DefaultValues.DEFAULT_AUTO_START
+export var fade_layout := DefaultValues.DEFAULT_FADE_LAYOUT
 export(Anim) var animation_enter := Anim.FADE
 export(Anim) var animation_leave := Anim.FADE
-export(float, 0.1, 2.0, 0.01) var duration := DEFAULT_DURATION
-export(float, 0.0, 1.0, 0.01) var delay := DEFAULT_DELAY
+export(float, 0.1, 2.0, 0.01) var duration := DefaultValues.DEFAULT_DURATION
+export(float, 0.0, 1.0, 0.01) var delay := DefaultValues.DEFAULT_DELAY
 export var layout_id := ""
 export(NodePath) var layout: NodePath
 export(Array, NodePath) var controls := []
 export(NodePath) var group: NodePath
-export var center_pivot := DEFAULT_CENTER_PIVOT
+export var center_pivot := DefaultValues.DEFAULT_CENTER_PIVOT
 export(
 	String,
 	"LINEAR",
@@ -152,15 +142,15 @@ export(
 	"CIRC",
 	"BOUNCE",
 	"BACK"
-) var transition_type := DEFAULT_TRANSITION_TYPE
-export(String, "IN", "OUT", "IN_OUT", "OUT_IN") var ease_type := DEFAULT_EASE_TYPE
+) var transition_type := DefaultValues.DEFAULT_TRANSITION_TYPE
+export(String, "IN", "OUT", "IN_OUT", "OUT_IN") var ease_type := DefaultValues.DEFAULT_EASE_TYPE
 
 # Private variables
+var _debug := false
 var _transition := Tween.TRANS_QUAD
 var _ease := Tween.EASE_IN_OUT
 var _node_infos := []
 var _controls := []
-var _debug := false
 var _is_shown := false
 var _status: int = Status.OK
 
@@ -174,6 +164,7 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 
+	_get_custom_settings()
 	_transition = _tween.get("TRANS_" + transition_type)
 	_ease = _tween.get("EASE_" + ease_type)
 
@@ -217,6 +208,24 @@ func _exit_tree() -> void:
 
 
 # Private methods
+# Get custom settings from project settings and apply to current instance.
+func _get_custom_settings() -> void:
+	for setting in DefaultValues.DEFAULT_SETTINGS:
+		if not ProjectSettings.has_setting(setting["name"]):
+			push_warning("GUI Transition setting not found on Project Settings: " + setting["name"])
+			push_warning("Try disabling and re-enabling the addon to re-add missing settings")
+			continue
+
+		var property_name: String = Array(setting["name"].split("/")).back()
+		var default_value = _round_if_float(setting["value"])
+		var project_settings_value = _round_if_float(ProjectSettings.get_setting(setting["name"]))
+		var current_value = _round_if_float(self.get(property_name))
+
+		if current_value == default_value and current_value != project_settings_value:
+			self.set(property_name, project_settings_value)
+			if _debug: prints("GuiTransition", property_name, "set to", project_settings_value, "from project settings:", self)
+
+
 # Handles the singleton go_to calls.
 func _go_to(id := "", function: FuncRef = null, args := []):
 	if not id:
@@ -524,3 +533,11 @@ func _get_node_infos() -> void:
 			auto_start,
 			center_pivot
 		))
+
+
+# Helper methods
+func _round_if_float(value):
+	if typeof(value) == TYPE_REAL:
+		return stepify(value, 0.01)
+
+	return value
