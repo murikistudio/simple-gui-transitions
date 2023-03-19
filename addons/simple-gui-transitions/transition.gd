@@ -133,8 +133,8 @@ export(ExportBool) var auto_start = ExportBool.DEFAULT
 export(ExportBool) var fade_layout = ExportBool.DEFAULT
 export(Anim) var animation_enter := Anim.DEFAULT
 export(Anim) var animation_leave := Anim.DEFAULT
-export(float, 0.1, 2.0, 0.01) var duration := DefaultValues.DEFAULT_DURATION
-export(float, 0.0, 1.0, 0.01) var delay := DefaultValues.DEFAULT_DELAY
+export(float, -0.01, 2.0, 0.01) var duration := -0.01
+export(float, -0.01, 1.0, 0.01) var delay := -0.01
 export var layout_id := ""
 export(NodePath) var layout: NodePath
 export(Array, NodePath) var controls := []
@@ -231,6 +231,7 @@ func _get_custom_settings() -> void:
 	var exported_bools := ["auto_start", "fade_layout", "center_pivot"]
 	var exported_strings := ["transition_type", "ease_type"]
 	var exported_anims := ["animation_enter", "animation_leave"]
+	var exported_floats := ["duration", "delay"]
 
 	for setting in DefaultValues.DEFAULT_SETTINGS:
 		if not ProjectSettings.has_setting(setting["name"]):
@@ -253,6 +254,10 @@ func _get_custom_settings() -> void:
 
 		elif prop_name in exported_anims:
 			result = _process_anim_value(current_value, settings_value, default_value)
+			current_value = result.get("value")
+
+		elif prop_name in exported_floats:
+			result = _process_float_value(current_value, settings_value, default_value)
 			current_value = result.get("value")
 
 		if result.get("use_default"):
@@ -278,6 +283,18 @@ func _process_string_value(value: String, settings_value: String, default_value:
 		return _get_result_dict(fallback_value, true)
 
 	return _get_result_dict(value if value else fallback_value, false)
+
+
+# Process value from float range.
+func _process_float_value(value: float, settings_value: float, default_value: float) -> Dictionary:
+	var fallback_value = settings_value \
+		if settings_value != null and settings_value >= 0.0 \
+		else default_value
+
+	if value < 0.0:
+		return _get_result_dict(fallback_value, true)
+
+	return _get_result_dict(value, false)
 
 
 # Process Anim enum value (default or animation names).
