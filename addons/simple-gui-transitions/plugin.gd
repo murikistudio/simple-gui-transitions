@@ -44,10 +44,8 @@ func _add_default_settings(replace := false):
 		var setting: Dictionary = _setting
 		var has_setting := ProjectSettings.has_setting(setting["name"])
 
-		if has_setting and not replace:
-			continue
-
-		ProjectSettings.set(setting["name"], setting["value"])
+		if not has_setting or replace:
+			ProjectSettings.set(setting["name"], setting["value"])
 
 		var property_info := {
 			"name": setting["name"],
