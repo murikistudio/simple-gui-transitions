@@ -4,20 +4,27 @@ extends Node
 
 # Enums
 enum Anim {
-	SLIDE_LEFT,
-	SLIDE_RIGHT,
-	SLIDE_UP,
-	SLIDE_DOWN,
-	FADE,
-	SCALE,
-	SCALE_VERTICAL,
-	SCALE_HORIZONTAL,
+	DEFAULT = -1,
+	SLIDE_LEFT = 0,
+	SLIDE_RIGHT = 1,
+	SLIDE_UP = 2,
+	SLIDE_DOWN = 3,
+	FADE = 4,
+	SCALE = 5,
+	SCALE_VERTICAL = 6,
+	SCALE_HORIZONTAL = 7,
 }
 
 enum Status {
 	OK,
 	SHOWING,
 	HIDING,
+}
+
+enum ExportBool {
+	DEFAULT = -1,
+	TRUE = 1,
+	FALSE = 0,
 }
 
 
@@ -116,21 +123,26 @@ class NodeInfo extends Reference:
 			_shader.set_shader_param("slide", position)
 
 
+# Constants
+const DEBUG := false
+
+
 # Variables
 # Public variables
-export var auto_start := DefaultValues.DEFAULT_AUTO_START
-export var fade_layout := DefaultValues.DEFAULT_FADE_LAYOUT
-export(Anim) var animation_enter := Anim.FADE
-export(Anim) var animation_leave := Anim.FADE
+export(ExportBool) var auto_start = ExportBool.DEFAULT
+export(ExportBool) var fade_layout = ExportBool.DEFAULT
+export(Anim) var animation_enter := Anim.DEFAULT
+export(Anim) var animation_leave := Anim.DEFAULT
 export(float, 0.1, 2.0, 0.01) var duration := DefaultValues.DEFAULT_DURATION
 export(float, 0.0, 1.0, 0.01) var delay := DefaultValues.DEFAULT_DELAY
 export var layout_id := ""
 export(NodePath) var layout: NodePath
 export(Array, NodePath) var controls := []
 export(NodePath) var group: NodePath
-export var center_pivot := DefaultValues.DEFAULT_CENTER_PIVOT
+export(ExportBool) var center_pivot = ExportBool.DEFAULT
 export(
 	String,
+	"Default",
 	"LINEAR",
 	"SINE",
 	"QUINT",
@@ -142,11 +154,17 @@ export(
 	"CIRC",
 	"BOUNCE",
 	"BACK"
-) var transition_type := DefaultValues.DEFAULT_TRANSITION_TYPE
-export(String, "IN", "OUT", "IN_OUT", "OUT_IN") var ease_type := DefaultValues.DEFAULT_EASE_TYPE
+) var transition_type := "Default"
+export(
+	String,
+	"Default",
+	"IN",
+	"OUT",
+	"IN_OUT",
+	"OUT_IN"
+) var ease_type := "Default"
 
 # Private variables
-var _debug := false
 var _transition := Tween.TRANS_QUAD
 var _ease := Tween.EASE_IN_OUT
 var _node_infos := []
@@ -210,20 +228,73 @@ func _exit_tree() -> void:
 # Private methods
 # Get custom settings from project settings and apply to current instance.
 func _get_custom_settings() -> void:
+	var exported_bools := ["auto_start", "fade_layout", "center_pivot"]
+	var exported_strings := ["transition_type", "ease_type"]
+	var exported_anims := ["animation_enter", "animation_leave"]
+
 	for setting in DefaultValues.DEFAULT_SETTINGS:
 		if not ProjectSettings.has_setting(setting["name"]):
 			push_warning("GUI Transition setting not found on Project Settings: " + setting["name"])
 			push_warning("Try disabling and re-enabling the addon to re-add missing settings")
-			continue
 
-		var property_name: String = Array(setting["name"].split("/")).back()
+		var prop_name: String = Array(setting["name"].split("/")).back()
 		var default_value = _round_if_float(setting["value"])
-		var project_settings_value = _round_if_float(ProjectSettings.get_setting(setting["name"]))
-		var current_value = _round_if_float(self.get(property_name))
+		var settings_value = _round_if_float(ProjectSettings.get_setting(setting["name"]))
+		var current_value = _round_if_float(self.get(prop_name))
+		var result := {}
 
-		if current_value == default_value and current_value != project_settings_value:
-			self.set(property_name, project_settings_value)
-			if _debug: prints("GuiTransition", property_name, "set to", project_settings_value, "from project settings:", self)
+		if prop_name in exported_bools:
+			result = _process_bool_value(current_value, settings_value, default_value)
+			current_value = result.get("value")
+
+		elif prop_name in exported_strings:
+			result = _process_string_value(current_value, settings_value, default_value)
+			current_value = result.get("value")
+
+		elif prop_name in exported_anims:
+			result = _process_anim_value(current_value, settings_value, default_value)
+			current_value = result.get("value")
+
+		if result.get("use_default"):
+			self.set(prop_name, settings_value if settings_value != null else default_value)
+			if DEBUG: prints("GuiTransition", prop_name, "set to", settings_value, "from project settings:", self)
+
+
+# Process ExportBool enum value (default, true and false).
+func _process_bool_value(value: int, settings_value: bool, default_value: bool) -> Dictionary:
+	var fallback_value = settings_value if settings_value != null else default_value
+
+	if value == ExportBool.DEFAULT:
+		return _get_result_dict(fallback_value, true)
+
+	return _get_result_dict(value == ExportBool.TRUE, false)
+
+
+# Process value from string dropdown (default or other).
+func _process_string_value(value: String, settings_value: String, default_value: String) -> Dictionary:
+	var fallback_value = settings_value if settings_value != null else default_value
+
+	if value.to_lower() == "default":
+		return _get_result_dict(fallback_value, true)
+
+	return _get_result_dict(value if value else fallback_value, false)
+
+
+# Process Anim enum value (default or animation names).
+func _process_anim_value(value: int, settings_value: int, default_value: int) -> Dictionary:
+	var fallback_value = settings_value if settings_value != null else default_value
+
+	if value == Anim.DEFAULT:
+		return _get_result_dict(fallback_value, true)
+
+	return _get_result_dict(value, false)
+
+
+func _get_result_dict(value, use_default: bool) -> Dictionary:
+	return {
+		"use_default": use_default,
+		"value": value,
+	}
 
 
 # Handles the singleton go_to calls.
@@ -515,7 +586,7 @@ func _get_node_infos() -> void:
 		if filtered_nodes.size() == 1:
 			current_duration = duration
 
-		if _debug: prints(JSON.print({
+		if DEBUG: prints(JSON.print({
 			"duration": duration,
 			"inv_delay": inv_delay,
 			"base_duration": base_duration,
