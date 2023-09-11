@@ -1,4 +1,4 @@
-extends Reference
+extends RefCounted
 
 
 # Constants
@@ -41,14 +41,14 @@ const DEFAULT_SETTINGS := [
 	},
 	{
 		"name": SETTING_DURATION,
-		"type": TYPE_REAL,
+		"type": TYPE_FLOAT,
 		"value": 0.5,
 		"hint": PROPERTY_HINT_RANGE,
 		"hint_string": "0.1,2.0,0.01",
 	},
 	{
 		"name": SETTING_DELAY,
-		"type": TYPE_REAL,
+		"type": TYPE_FLOAT,
 		"value": 0.5,
 		"hint": PROPERTY_HINT_RANGE,
 		"hint_string": "0.0,1.0,0.01",

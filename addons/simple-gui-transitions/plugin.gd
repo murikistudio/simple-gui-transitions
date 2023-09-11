@@ -1,4 +1,4 @@
-tool
+@tool
 extends EditorPlugin
 
 
@@ -20,7 +20,7 @@ func enable_plugin() -> void:
 
 
 # Remove the addon singleton and all its settings from project settings.
-func disable_plugin() -> void:
+func _disable_plugin() -> void:
 	remove_autoload_singleton(SINGLETON_NAME)
 	_remove_default_settings()
 

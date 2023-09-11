@@ -1,4 +1,5 @@
-class_name GuiTransition, "res://addons/simple-gui-transitions/icon.png"
+@icon("res://addons/simple-gui-transitions/icon.png")
+class_name GuiTransition
 extends Node
 
 
@@ -34,7 +35,7 @@ const DefaultValues := preload("res://addons/simple-gui-transitions/default_valu
 
 
 # Inner classes
-class NodeInfo extends Reference:
+class NodeInfo extends RefCounted:
 	var node: Control
 	var name: String
 	var initial_position: Vector2
@@ -56,7 +57,7 @@ class NodeInfo extends Reference:
 		node = _node
 		name = node.name
 		initial_position = Vector2.ZERO
-		initial_scale = Vector2(node.rect_scale)
+		initial_scale = Vector2(node.scale)
 		initial_mouse_filter = node.mouse_filter
 		delay = _delay
 		duration = _duration
@@ -97,7 +98,7 @@ class NodeInfo extends Reference:
 
 	# Get the out-of-screen position of node according to the animation type.
 	func get_target_position(animation: int) -> Vector2:
-		var view_size := node.get_viewport().size
+		var view_size := node.get_viewport().get_visible_rect().size
 		var offset := Vector2.ZERO
 
 		match animation:
@@ -114,13 +115,13 @@ class NodeInfo extends Reference:
 
 	func set_pivot_to_center() -> void:
 		if center_pivot:
-			node.rect_pivot_offset = node.rect_size / 2
+			node.pivot_offset = node.size / 2
 
 	func set_position(position: Vector2) -> void:
 		var _shader := node.material as ShaderMaterial
 
 		if _shader:
-			_shader.set_shader_param("slide", position)
+			_shader.set_shader_parameter("slide", position)
 
 
 # Constants
@@ -129,19 +130,18 @@ const DEBUG := false
 
 # Variables
 # Public variables
-export(ExportBool) var auto_start = ExportBool.DEFAULT
-export(ExportBool) var fade_layout = ExportBool.DEFAULT
-export(Anim) var animation_enter := Anim.DEFAULT
-export(Anim) var animation_leave := Anim.DEFAULT
-export(float, -0.01, 2.0, 0.01) var duration := -0.01
-export(float, -0.01, 1.0, 0.01) var delay := -0.01
-export var layout_id := ""
-export(NodePath) var layout: NodePath
-export(Array, NodePath) var controls := []
-export(NodePath) var group: NodePath
-export(ExportBool) var center_pivot = ExportBool.DEFAULT
-export(
-	String,
+@export var auto_start: ExportBool = ExportBool.DEFAULT
+@export var fade_layout: ExportBool = ExportBool.DEFAULT
+@export var animation_enter := Anim.DEFAULT
+@export var animation_leave := Anim.DEFAULT
+@export var duration := -0.01 # (float, -0.01, 2.0, 0.01)
+@export var delay := -0.01 # (float, -0.01, 1.0, 0.01)
+@export var layout_id := ""
+@export var layout: NodePath
+@export var controls := [] # (Array, NodePath)
+@export var group: NodePath
+@export var center_pivot: ExportBool = ExportBool.DEFAULT
+@export_enum(
 	"Default",
 	"LINEAR",
 	"SINE",
@@ -155,8 +155,7 @@ export(
 	"BOUNCE",
 	"BACK"
 ) var transition_type := "Default"
-export(
-	String,
+@export_enum(
 	"Default",
 	"IN",
 	"OUT",
@@ -172,9 +171,9 @@ var _controls := []
 var _is_shown := false
 var _status: int = Status.OK
 
-onready var _layout: Control = get_node(layout) if layout else null
-onready var _group: Control = get_node(group) if group else null
-onready var _tween: Tween = Tween.new()
+@onready var _layout: Control = get_node(layout) if layout else null
+@onready var _group: Control = get_node(group) if group else null
+@onready var _tween: Tween = Tween.new()
 
 
 # Built-in overrides
@@ -186,7 +185,7 @@ func _ready() -> void:
 	_transition = _tween.get("TRANS_" + transition_type)
 	_ease = _tween.get("EASE_" + ease_type)
 
-	add_child(_tween)
+	#add_child(_tween)
 
 	if _transition_valid():
 		if not layout_id:
@@ -203,7 +202,7 @@ func _ready() -> void:
 			_show()
 
 	else:
-		push_error("Invalid GuiTransition configuration: " + self.get_path())
+		push_error("Invalid GuiTransition configuration: %s" % self.get_path())
 		queue_free()
 
 
@@ -219,7 +218,7 @@ func _exit_tree() -> void:
 	if index < 0:
 		return
 
-	layouts.remove(index)
+	layouts.remove_at(index)
 
 	if not layouts.size():
 		GuiTransitions._layouts.erase(layout_id)
@@ -315,25 +314,25 @@ func _get_result_dict(value, use_default: bool) -> Dictionary:
 
 
 # Handles the singleton go_to calls.
-func _go_to(id := "", function: FuncRef = null, args := []):
+func _go_to(id := "", function = null, args := []):
 	if not id:
 		return
 
 	if _transition_valid() and _layout.visible:
 		if id != layout_id:
 			_hide("", function, args)
-			yield(_tween, "tween_all_completed")
+			await _tween.tween_all_completed
 			GuiTransitions._for_each_layout("_show", [id])
 		else:
 			GuiTransitions._for_each_layout("_show", [id])
 
 
 # Handles the singleton update calls.
-func _update(function: FuncRef = null, args := []):
+func _update(function = null, args := []):
 	if _transition_valid() and _layout.visible:
 
 		_hide(layout_id, function, args)
-		yield(_tween, "tween_all_completed")
+		await _tween.tween_all_completed
 		_show(layout_id)
 
 
@@ -357,7 +356,7 @@ func _show(id := ""):
 				_slide_in(node_info)
 
 		_tween.start()
-		yield(_tween, "tween_all_completed")
+		await _tween.tween_all_completed
 		_is_shown = true
 		_status = Status.OK
 
@@ -366,7 +365,7 @@ func _show(id := ""):
 
 
 # Handles the singleton hide calls.
-func _hide(id := "", function: FuncRef = null, args := []):
+func _hide(id := "", function = null, args := []):
 	if _transition_valid() and _layout.visible and (not id or id == layout_id) and _status == Status.OK:
 		_status = Status.HIDING
 
@@ -382,7 +381,7 @@ func _hide(id := "", function: FuncRef = null, args := []):
 				_slide_out(node_info)
 
 		_tween.start()
-		yield(_tween, "tween_all_completed")
+		await _tween.tween_all_completed
 
 		if function:
 			function.call_funcv(args)
@@ -401,10 +400,10 @@ func _transition_valid() -> bool:
 	var controls_source_valid := bool(controls.size() or _group)
 
 	if not layout:
-		push_warning("A layout must be set on GuiTransition: " + self.get_path())
+		push_warning("A layout must be set on GuiTransition: %s" % self.get_path())
 
 	if not controls_source_valid:
-		push_warning("A list of controls or a group container must be set on GuiTransition: " + self.get_path())
+		push_warning("A list of controls or a group container must be set on GuiTransition: %s" % self.get_path())
 
 	return controls_source_valid and layout
 
@@ -423,14 +422,14 @@ func _slide_in(node_info: NodeInfo):
 	)
 
 	node_info.unset_clickable()
-	yield(_tween, "tween_all_completed")
+	await _tween.tween_all_completed
 	node_info.revert_clickable()
 
 
 # Performs the slide out transition.
 func _slide_out(node_info: NodeInfo):
-	node_info.node.rect_min_size = Vector2(1, 1)
-	node_info.node.rect_min_size = Vector2.ZERO
+	node_info.node.custom_minimum_size = Vector2(1, 1)
+	node_info.node.custom_minimum_size = Vector2.ZERO
 
 	_tween.interpolate_method(
 		node_info, "set_position",
@@ -442,7 +441,7 @@ func _slide_out(node_info: NodeInfo):
 	)
 
 	node_info.unset_clickable()
-	yield(_tween, "tween_all_completed")
+	await _tween.tween_all_completed
 	node_info.node.modulate.a = 0.0
 
 
@@ -459,7 +458,7 @@ func _fade_in(node_info: NodeInfo):
 		node_info.delay
 	)
 	node_info.unset_clickable()
-	yield(_tween, "tween_all_completed")
+	await _tween.tween_all_completed
 	node_info.revert_clickable()
 
 
@@ -489,7 +488,7 @@ func _scale_in(node_info: NodeInfo):
 	)
 
 	_tween.interpolate_property(
-		node_info.node, "rect_scale",
+		node_info.node, "scale",
 		node_info.get_target_scale(animation_enter), node_info.initial_scale,
 		node_info.duration,
 		_transition,
@@ -499,13 +498,13 @@ func _scale_in(node_info: NodeInfo):
 
 	node_info.unset_clickable()
 
-	yield(_tween, "tween_all_completed")
+	await _tween.tween_all_completed
 	node_info.revert_clickable()
 
 
 # Performs the scale out transition.
 func _scale_out(node_info: NodeInfo):
-	var initial_scale := node_info.node.rect_scale as Vector2
+	var initial_scale := node_info.node.scale as Vector2
 
 	_tween.interpolate_callback(
 		node_info,
@@ -514,7 +513,7 @@ func _scale_out(node_info: NodeInfo):
 	)
 
 	_tween.interpolate_property(
-		node_info.node, "rect_scale",
+		node_info.node, "scale",
 		initial_scale, node_info.get_target_scale(animation_leave),
 		node_info.duration,
 		_transition,
@@ -523,7 +522,7 @@ func _scale_out(node_info: NodeInfo):
 	)
 
 	node_info.unset_clickable()
-	yield(_tween, "tween_all_completed")
+	await _tween.tween_all_completed
 	node_info.node.modulate.a = 0.0
 
 
@@ -588,7 +587,7 @@ func _get_node_infos() -> void:
 	var filtered_nodes := _get_nodes_from_containers()
 
 	if not filtered_nodes.size():
-		push_warning("No valid group children or controls set on GuiTransition: " + self.get_path())
+		push_warning("No valid group children or controls set on GuiTransition: %s" % self.get_path())
 
 	var base_duration := duration / filtered_nodes.size()
 	var inv_delay := 1.0 - delay
@@ -603,7 +602,7 @@ func _get_node_infos() -> void:
 		if filtered_nodes.size() == 1:
 			current_duration = duration
 
-		if DEBUG: prints(JSON.print({
+		if DEBUG: prints(JSON.stringify({
 			"duration": duration,
 			"inv_delay": inv_delay,
 			"base_duration": base_duration,
@@ -625,7 +624,7 @@ func _get_node_infos() -> void:
 
 # Helper methods
 func _round_if_float(value):
-	if typeof(value) == TYPE_REAL:
-		return stepify(value, 0.01)
+	if typeof(value) == TYPE_FLOAT:
+		return snapped(value, 0.01)
 
 	return value

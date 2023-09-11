@@ -2,18 +2,18 @@ extends Control
 
 
 # Variables
-export var num_controls := 4
-export var delay_alpha := 0.5
-export var delay_factor := 1.0
-export var duration_total := 1.0
+@export var num_controls := 4
+@export var delay_alpha := 0.5
+@export var delay_factor := 1.0
+@export var duration_total := 1.0
 
 var _controls := []
-onready var _container_controls: VBoxContainer = find_node("ContainerControls")
-onready var _slider_delay: Range = find_node("SliderDelay")
-onready var _slider_duration: Range = find_node("SliderDuration")
-onready var _text_edit_output: TextEdit = find_node("TextEditOutput")
-onready var _label_delay: Label = find_node("LabelDelay")
-onready var _label_duration: Label = find_node("LabelDuration")
+@onready var _container_controls: VBoxContainer = find_child("ContainerControls")
+@onready var _slider_delay: Range = find_child("SliderDelay")
+@onready var _slider_duration: Range = find_child("SliderDuration")
+@onready var _text_edit_output: TextEdit = find_child("TextEditOutput")
+@onready var _label_delay: Label = find_child("LabelDelay")
+@onready var _label_duration: Label = find_child("LabelDuration")
 
 
 # Built-in overrides
@@ -40,10 +40,10 @@ func _add_controls() -> void:
 		hbox_container.add_child(button_post_delay)
 
 		var label_sum := Label.new()
-		label_sum.valign = Label.VALIGN_CENTER
-		label_sum.align = Label.ALIGN_CENTER
+		label_sum.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		label_sum.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label_sum.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		label_sum.rect_min_size.x = 120
+		label_sum.custom_minimum_size.x = 120
 		hbox_container.add_child(label_sum)
 
 		_controls.push_back({
@@ -92,7 +92,7 @@ func _update_gui() -> void:
 
 func _set_button_visual(button: Button, value: float) -> void:
 	button.text = str(value)
-	button.hint_tooltip = str(value)
+	button.tooltip_text = str(value)
 	button.size_flags_stretch_ratio = clamp(value, 0.0, duration_total)
 
 

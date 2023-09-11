@@ -12,12 +12,12 @@ var _layouts := {}
 
 # Public methods
 # Hide the current layout and show the layout with the given id.
-func go_to(id: String, function: FuncRef = null, args := []):
+func go_to(id: String, function = null, args := []):
 	_for_each_layout("_go_to", [id, function, args])
 
 
 # Hide and show the current layout.
-func update(function: FuncRef = null, args := []):
+func update(function = null, args := []):
 	_for_each_layout("_update", [function, args])
 
 
@@ -27,7 +27,7 @@ func show(id := ""):
 
 
 # Hide the layout with the given id, or all visible layouts if no id is passed in.
-func hide(id := "", function: FuncRef = null, args := []):
+func hide(id := "", function = null, args := []):
 	_for_each_layout("_hide", [id, function, args])
 
 
