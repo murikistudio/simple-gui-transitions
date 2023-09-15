@@ -1,10 +1,10 @@
 [gd_scene load_steps=6 format=3 uid="uid://pkmdjmq1ouq3"]
 
-[ext_resource type="PackedScene" path="res://addons/simple-gui-transitions/example/layout_1.tscn" id="1"]
-[ext_resource type="PackedScene" path="res://addons/simple-gui-transitions/example/layout_2.tscn" id="2"]
+[ext_resource type="PackedScene" uid="uid://drn0is2i67xvx" path="res://addons/simple-gui-transitions/example/layout_1.tscn" id="1"]
+[ext_resource type="PackedScene" uid="uid://dlidtkkqbimv1" path="res://addons/simple-gui-transitions/example/layout_2.tscn" id="2"]
 [ext_resource type="Script" path="res://addons/simple-gui-transitions/example/main.gd" id="3"]
 [ext_resource type="Theme" uid="uid://cxbdqv0cxcy1m" path="res://addons/simple-gui-transitions/example/theme.tres" id="4"]
-[ext_resource type="PackedScene" path="res://addons/simple-gui-transitions/example/layout_3.tscn" id="5"]
+[ext_resource type="PackedScene" uid="uid://cdba1niudigw2" path="res://addons/simple-gui-transitions/example/layout_3.tscn" id="5"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -66,14 +66,14 @@ size_flags_stretch_ratio = 8.0
 mouse_filter = 2
 
 [node name="Layout1" parent="." instance=ExtResource("1")]
-anchors_preset = 0
+layout_mode = 1
 
 [node name="Layout2" parent="." instance=ExtResource("2")]
 visible = false
-anchors_preset = 0
+layout_mode = 1
 
 [node name="Layout3" parent="." instance=ExtResource("5")]
 visible = false
-anchors_preset = 0
+layout_mode = 1
 
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/ButtonShow" to="." method="_on_ButtonShow_pressed"]
