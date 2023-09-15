@@ -32,6 +32,10 @@ window/size/viewport_height=540
 
 enabled=PackedStringArray("res://addons/simple-gui-transitions/plugin.cfg")
 
+[filesystem]
+
+import/blender/enabled=false
+
 [gui_transitions]
 
 config/default/auto_start=true
@@ -50,7 +54,7 @@ common/enable_pause_aware_picking=true
 
 [rendering]
 
-renderer/rendering_method="gl_compatibility"
+renderer/rendering_method="mobile"
 environment/defaults/default_clear_color=Color(0.262745, 0.388235, 0.396078, 1)
 quality/driver/driver_name="GLES2"
 vram_compression/import_etc=true
