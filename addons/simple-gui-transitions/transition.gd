@@ -1,31 +1,42 @@
 @icon("res://addons/simple-gui-transitions/icon.png")
 class_name GuiTransition
 extends Node
+## This node is responsible for transitioning a specific layout.
+## 
+## The default transition settings can be set on
+## [code]Project Settings > GUI Transitions > Config[/code].
+## Those settings will be applied on top of any default
+## property on the node [code]GuiTransition[/code].
+## This is useful to increase or decrease the speed of transitions
+## on the whole project, for example. See each property description below.
 
 
 # Enums
+## Available animations for enter and leave transitions.
 enum Anim {
-	DEFAULT = -1,
-	SLIDE_LEFT = 0,
-	SLIDE_RIGHT = 1,
-	SLIDE_UP = 2,
-	SLIDE_DOWN = 3,
-	FADE = 4,
-	SCALE = 5,
-	SCALE_VERTICAL = 6,
-	SCALE_HORIZONTAL = 7,
+	DEFAULT = -1,  ## Default animation set on Project Settings.
+	SLIDE_LEFT = 0,  ## Slide controls to the left of screen.
+	SLIDE_RIGHT = 1,  ## Slide controls to the right of screen.
+	SLIDE_UP = 2,  ## Slide controls to the top of screen.
+	SLIDE_DOWN = 3,  ## Slide controls to the bottom of screen.
+	FADE = 4,  ## Fade controls in place.
+	SCALE = 5,  ## Scale controls based on pivot center.
+	SCALE_VERTICAL = 6,  ## Scale controls horizontally based on pivot center.
+	SCALE_HORIZONTAL = 7,  ## Scale controls vertically based on pivot center.
 }
 
+## Current transition status.
 enum Status {
-	OK,
-	SHOWING,
-	HIDING,
+	OK,  ## No transition being performed.
+	SHOWING,  ## Performing enter transition.
+	HIDING,  ## Performing leave transition.
 }
 
+## Boolean value used by transition properties.
 enum ExportBool {
-	DEFAULT = -1,
-	TRUE = 1,
-	FALSE = 0,
+	DEFAULT = -1,  ## Default value set on Project Settings.
+	TRUE = 1,  ## Enable property.
+	FALSE = 0,  ## Disable property.
 }
 
 
@@ -130,17 +141,44 @@ const DEBUG := false
 
 # Variables
 # Public variables
+@export_group("Transition")
+
+## If the current layout will trigger its transition
+## at startup automatically. Enabled by default.
 @export var auto_start: ExportBool = ExportBool.DEFAULT
+
+## If enabled, will fade the whole layout along with the selected animation of individual controls.
+## The fade duration is based on the [code]Duration[/code] property. Enabled by default.
 @export var fade_layout: ExportBool = ExportBool.DEFAULT
+
+## The animation type of the controls when entering the screen.
 @export var animation_enter := Anim.DEFAULT
+
+## The animation type of the controls when leaving the screen.
 @export var animation_leave := Anim.DEFAULT
-@export var duration := -0.01 # (float, -0.01, 2.0, 0.01)
-@export var delay := -0.01 # (float, -0.01, 1.0, 0.01)
-@export var layout_id := ""
-@export var layout: NodePath
-@export var controls := [] # (Array, NodePath)
-@export var group: NodePath
-@export var center_pivot: ExportBool = ExportBool.DEFAULT
+
+## The total animation duration in seconds.
+## A negative value such as the default [code]-0.01[/code] will make the
+## transition use the default value set in Project Settings.
+@export_range(-0.01, 2.0, 0.01) var duration := -0.01
+
+## Delay ratio between transitions for each node contained
+## in [code]Group[/code] or [code]Controls[/code].
+## The default value is [code]0.5[/code].[br][br]
+## 
+## - A negative value such as the default [code]-0.01[/code] will make the
+## transition use the default value set in Project Settings.[br]
+## 
+## - A delay of [code]0.0[/code] means no delay, that is, all controls
+## will start and finish their animations at the same time.[br]
+## 
+## - A delay of [code]1.0[/code] will make each control wait for the
+## previous one to finish its animation to start its own.[br]
+## 
+## - A delay between [code]0.0[/code] and [code]1.0[/code] will make
+## controls intertwine animations, giving a smoother effect.
+@export_range(-0.01, 1.0, 0.01) var delay := -0.01
+
 @export_enum(
 	"Default",
 	"LINEAR",
@@ -154,25 +192,73 @@ const DEBUG := false
 	"CIRC",
 	"BOUNCE",
 	"BACK"
+## Transition curve of the animations. Same as [code]Tween.TransitionType[/code].
 ) var transition_type := "Default"
+
 @export_enum(
 	"Default",
 	"IN",
 	"OUT",
 	"IN_OUT",
 	"OUT_IN"
+## Ease curve of the animations. Same as [code]Tween.EaseType[/code].
 ) var ease_type := "Default"
 
+@export_group("Target")
+
+## The main layout node. It will be hidden and shown accordingly.
+## Should be the topmost node of the current layout.
+## [b][color=red]Required![/color][/b]
+@export var layout: NodePath
+
+## Optional ID of layout to trigger changes on the singleton
+## [code]GuiTransitions[/code] (at method parameters named [code]id[/code]).
+## If empty, will be assumed as the [code]Layout[/code] node name.
+@export var layout_id := ""
+
+## Array of individual nodes to be animated.
+## The order will be taken in account to apply the animation [code]Delay[/code].
+## [b]If empty, a [code]Group[/code] must be set[/b].
+@export var controls: Array[NodePath] = []
+
+## A node with children controls to be animated in sequence.
+## The order will be taken in account to apply the animation [code]Delay[/code].
+## Example: a [code]HBoxContainer[/code] or [code]VBoxContainer[/code] with
+## several buttons as children will allow to animate all buttons one by one.
+## [b]If not set, [code]Controls[/code] must be selected.[/b]
+@export var group: NodePath
+
+## When [code]Animation[/code] Enter or [code]Animation Leave[/code]
+## is one of the scale animations, it will center the control's
+## [code]pivot_offset[/code] property.
+@export var center_pivot: ExportBool = ExportBool.DEFAULT
+
 # Private variables
+## Parsed transition enum value.
 var _transition := Tween.TRANS_QUAD
+
+## Parsed ease enum value.
 var _ease := Tween.EASE_IN_OUT
-var _node_infos := []
-var _controls := []
+
+## Array of NodeInfo of all controls affected by transition.
+var _node_infos: Array[NodeInfo] = []
+
+## Array of all controls affected by transition.
+var _controls: Array[Control] = []
+
+## If current transition layout is being shown.
 var _is_shown := false
+
+## Parsed transition status enum value.
 var _status: int = Status.OK
 
+## Main control affected by this transition.
 @onready var _layout: Control = get_node(layout) if layout else null
+
+## Control containing child controls affected by this transition.
 @onready var _group: Control = get_node(group) if group else null
+
+## Tweener used by this transition to perform animations.
 @onready var _tween: Tween = Tween.new()
 
 
@@ -225,7 +311,7 @@ func _exit_tree() -> void:
 
 
 # Private methods
-# Get custom settings from project settings and apply to current instance.
+## Get custom settings from project settings and apply to current instance.
 func _get_custom_settings() -> void:
 	var exported_bools := ["auto_start", "fade_layout", "center_pivot"]
 	var exported_strings := ["transition_type", "ease_type"]
@@ -264,7 +350,7 @@ func _get_custom_settings() -> void:
 			if DEBUG: prints("GuiTransition", prop_name, "set to", settings_value, "from project settings:", self)
 
 
-# Process ExportBool enum value (default, true and false).
+## Process ExportBool enum value (default, true and false).
 func _process_bool_value(value: int, settings_value: bool, default_value: bool) -> Dictionary:
 	var fallback_value = settings_value if settings_value != null else default_value
 
@@ -274,7 +360,7 @@ func _process_bool_value(value: int, settings_value: bool, default_value: bool) 
 	return _get_result_dict(value == ExportBool.TRUE, false)
 
 
-# Process value from string dropdown (default or other).
+## Process value from string dropdown (default or other).
 func _process_string_value(value: String, settings_value: String, default_value: String) -> Dictionary:
 	var fallback_value = settings_value if settings_value != null else default_value
 
@@ -284,7 +370,7 @@ func _process_string_value(value: String, settings_value: String, default_value:
 	return _get_result_dict(value if value else fallback_value, false)
 
 
-# Process value from float range.
+## Process value from float range.
 func _process_float_value(value: float, settings_value: float, default_value: float) -> Dictionary:
 	var fallback_value = settings_value \
 		if settings_value != null and settings_value >= 0.0 \
@@ -296,7 +382,7 @@ func _process_float_value(value: float, settings_value: float, default_value: fl
 	return _get_result_dict(value, false)
 
 
-# Process Anim enum value (default or animation names).
+## Process Anim enum value (default or animation names).
 func _process_anim_value(value: int, settings_value: int, default_value: int) -> Dictionary:
 	var fallback_value = settings_value if settings_value != null else default_value
 
@@ -306,6 +392,7 @@ func _process_anim_value(value: int, settings_value: int, default_value: int) ->
 	return _get_result_dict(value, false)
 
 
+## Get result dict of parsed setting value.
 func _get_result_dict(value, use_default: bool) -> Dictionary:
 	return {
 		"use_default": use_default,
@@ -313,7 +400,7 @@ func _get_result_dict(value, use_default: bool) -> Dictionary:
 	}
 
 
-# Handles the singleton go_to calls.
+## Handles the singleton go_to calls.
 func _go_to(id := "", function = null, args := []):
 	if not id:
 		return
@@ -327,7 +414,7 @@ func _go_to(id := "", function = null, args := []):
 			GuiTransitions._for_each_layout("_show", [id])
 
 
-# Handles the singleton update calls.
+## Handles the singleton update calls.
 func _update(function = null, args := []):
 	if _transition_valid() and _layout.visible:
 
@@ -336,7 +423,7 @@ func _update(function = null, args := []):
 		_show(layout_id)
 
 
-# Handles the singleton show calls.
+## Handles the singleton show calls.
 func _show(id := ""):
 	if _transition_valid() and (not id or id == layout_id) and _status == Status.OK:
 		_layout.visible = true
@@ -364,7 +451,7 @@ func _show(id := ""):
 			GuiTransitions.emit_signal("show_completed")
 
 
-# Handles the singleton hide calls.
+## Handles the singleton hide calls.
 func _hide(id := "", function = null, args := []):
 	if _transition_valid() and _layout.visible and (not id or id == layout_id) and _status == Status.OK:
 		_status = Status.HIDING
@@ -395,7 +482,7 @@ func _hide(id := "", function = null, args := []):
 
 
 # Abstraction methods
-# Returns if it's possible to perform transition.
+## Returns if it's possible to perform transition.
 func _transition_valid() -> bool:
 	var controls_source_valid := bool(controls.size() or _group)
 
@@ -408,7 +495,7 @@ func _transition_valid() -> bool:
 	return controls_source_valid and layout
 
 
-# Performs the slide in transition.
+## Performs the slide in transition.
 func _slide_in(node_info: NodeInfo):
 	_fade_in_node(node_info)
 
@@ -426,7 +513,7 @@ func _slide_in(node_info: NodeInfo):
 	node_info.revert_clickable()
 
 
-# Performs the slide out transition.
+## Performs the slide out transition.
 func _slide_out(node_info: NodeInfo):
 	node_info.node.custom_minimum_size = Vector2(1, 1)
 	node_info.node.custom_minimum_size = Vector2.ZERO
@@ -445,7 +532,7 @@ func _slide_out(node_info: NodeInfo):
 	node_info.node.modulate.a = 0.0
 
 
-# Performs the fade in transition.
+## Performs the fade in transition.
 func _fade_in(node_info: NodeInfo):
 	node_info.set_position(Vector2.ZERO)
 
@@ -462,7 +549,7 @@ func _fade_in(node_info: NodeInfo):
 	node_info.revert_clickable()
 
 
-# Performs the fade out transition.
+## Performs the fade out transition.
 func _fade_out(node_info: NodeInfo):
 	_tween.interpolate_property(
 		node_info.node, "modulate:a",
@@ -475,7 +562,7 @@ func _fade_out(node_info: NodeInfo):
 	node_info.unset_clickable()
 
 
-# Performs the scale in transition.
+## Performs the scale in transition.
 func _scale_in(node_info: NodeInfo):
 	node_info.set_position(Vector2.ZERO)
 
@@ -502,7 +589,7 @@ func _scale_in(node_info: NodeInfo):
 	node_info.revert_clickable()
 
 
-# Performs the scale out transition.
+## Performs the scale out transition.
 func _scale_out(node_info: NodeInfo):
 	var initial_scale := node_info.node.scale as Vector2
 
@@ -526,7 +613,7 @@ func _scale_out(node_info: NodeInfo):
 	node_info.node.modulate.a = 0.0
 
 
-# Gradually fade in the whole layout along with individual transitions.
+## Gradually fade in the whole layout along with individual transitions.
 func _fade_in_layout() -> void:
 	_tween.interpolate_property(
 		_layout, "modulate:a",
@@ -537,7 +624,7 @@ func _fade_in_layout() -> void:
 	)
 
 
-# Gradually fade out the whole layout along with individual transitions.
+## Gradually fade out the whole layout along with individual transitions.
 func _fade_out_layout() -> void:
 	_tween.interpolate_property(
 		_layout, "modulate:a",
@@ -548,7 +635,7 @@ func _fade_out_layout() -> void:
 	)
 
 
-# Fix of node pop-in in some cases.
+## Fix of node pop-in in some cases.
 func _fade_in_node(node_info: NodeInfo) -> void:
 	var node_duration := max(node_info.duration / 3.0, 0.09)
 
@@ -562,7 +649,7 @@ func _fade_in_node(node_info: NodeInfo) -> void:
 	)
 
 
-# Get nodes from group or array of node paths set by the user.
+## Get nodes from group or array of node paths set by the user.
 func _get_nodes_from_containers() -> Array:
 	_controls.clear()
 
@@ -582,7 +669,7 @@ func _get_nodes_from_containers() -> Array:
 	return filtered_nodes
 
 
-# Get children nodes from group children or controls array.
+## Get children nodes from group children or controls array.
 func _get_node_infos() -> void:
 	var filtered_nodes := _get_nodes_from_containers()
 
@@ -623,6 +710,7 @@ func _get_node_infos() -> void:
 
 
 # Helper methods
+## Round float value by the step of 0.01.
 func _round_if_float(value):
 	if typeof(value) == TYPE_FLOAT:
 		return snapped(value, 0.01)
