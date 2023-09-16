@@ -420,7 +420,7 @@ func _get_result_dict(value, use_default: bool) -> Dictionary:
 
 
 ## Handles the singleton go_to calls.
-func _go_to(id := "", function = null, args := []):
+func _go_to(id := "", function = null):
 	if not id:
 		return
 
@@ -434,7 +434,7 @@ func _go_to(id := "", function = null, args := []):
 
 
 ## Handles the singleton update calls.
-func _update(function = null, args := []):
+func _update(function = null):
 	if _transition_valid() and _layout.visible:
 
 		_hide(layout_id, function)
