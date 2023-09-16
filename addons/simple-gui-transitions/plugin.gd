@@ -14,7 +14,7 @@ const SINGLETON_PATH := "res://addons/simple-gui-transitions/singleton.gd"
 
 # Built-in overrides
 # Add the addon singleton and default settings to project settings.
-func enable_plugin() -> void:
+func _enable_plugin() -> void:
 	add_autoload_singleton(SINGLETON_NAME, SINGLETON_PATH)
 	_add_default_settings()
 
