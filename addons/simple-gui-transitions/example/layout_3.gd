@@ -23,6 +23,11 @@ func _ready() -> void:
 	_slider_duration.value = duration_total
 
 
+# Public methods
+func print_function(message: String) -> void:
+	prints(message)
+
+
 # Private methods
 func _add_controls() -> void:
 	for i in num_controls:
@@ -90,6 +95,7 @@ func _update_gui() -> void:
 
 	_text_edit_output.text = "\n".join(output_lines)
 
+
 func _set_button_visual(button: Button, value: float) -> void:
 	button.text = str(value)
 	button.tooltip_text = str(value)
@@ -124,4 +130,5 @@ func _on_SliderDuration_value_changed(value: float) -> void:
 
 
 func _on_ButtonGoTo_pressed() -> void:
-	GuiTransitions.go_to("Layout1")
+	var optional_callback := print_function.bind("Transition from Layout3 to Layout 1")
+	GuiTransitions.go_to("Layout1", optional_callback)

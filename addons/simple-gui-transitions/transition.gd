@@ -426,7 +426,7 @@ func _go_to(id := "", function = null, args := []):
 
 	if _transition_valid() and _layout.visible:
 		if id != layout_id:
-			_hide("", function, args)
+			_hide("", function)
 			await _tween.finished
 			GuiTransitions._for_each_layout("_show", [id])
 		else:
@@ -437,7 +437,7 @@ func _go_to(id := "", function = null, args := []):
 func _update(function = null, args := []):
 	if _transition_valid() and _layout.visible:
 
-		_hide(layout_id, function, args)
+		_hide(layout_id, function)
 		await _tween.finished
 		_show(layout_id)
 
@@ -470,7 +470,7 @@ func _show(id := ""):
 
 
 ## Handles the singleton hide calls.
-func _hide(id := "", function = null, args := []):
+func _hide(id := "", function = null):
 	if _transition_valid() and _layout.visible and (not id or id == layout_id) and _status == Status.OK:
 		_status = Status.HIDING
 
@@ -487,8 +487,8 @@ func _hide(id := "", function = null, args := []):
 
 		await _tween.finished
 
-		if function:
-			function.call_funcv(args)
+		if typeof(function) == TYPE_CALLABLE:
+			(function as Callable).call()
 
 		_layout.visible = false
 		_is_shown = false
