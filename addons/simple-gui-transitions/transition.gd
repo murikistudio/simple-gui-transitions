@@ -292,6 +292,9 @@ func _ready() -> void:
 
 		_get_node_infos()
 
+		if fade_layout:
+			_layout.modulate.a = 0.0
+
 		if _layout.visible and auto_start:
 			_show()
 
