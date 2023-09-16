@@ -2,7 +2,7 @@
 class_name GuiTransition
 extends Node
 ## This node is responsible for transitioning a specific layout.
-## 
+##
 ## The default transition settings can be set on
 ## [code]Project Settings > GUI Transitions > Config[/code].
 ## Those settings will be applied on top of any default
@@ -55,6 +55,7 @@ class NodeInfo extends RefCounted:
 	var delay: float
 	var duration: float
 	var center_pivot: bool
+	var tween: Tween
 
 	func _init(
 		_node: Control,
@@ -86,6 +87,13 @@ class NodeInfo extends RefCounted:
 
 		if _auto_start:
 			node.modulate.a = 0.0
+
+	# Invalidates existing tween and creates a new one.
+	func init_tween() -> void:
+		if tween and tween.is_valid():
+			tween.kill()
+
+		tween = node.create_tween()
 
 	# Set node to unclickable while in transition.
 	func unset_clickable():
@@ -165,16 +173,16 @@ const DEBUG := false
 ## Delay ratio between transitions for each node contained
 ## in [code]Group[/code] or [code]Controls[/code].
 ## The default value is [code]0.5[/code].[br][br]
-## 
+##
 ## - A negative value such as the default [code]-0.01[/code] will make the
 ## transition use the default value set in Project Settings.[br]
-## 
+##
 ## - A delay of [code]0.0[/code] means no delay, that is, all controls
 ## will start and finish their animations at the same time.[br]
-## 
+##
 ## - A delay of [code]1.0[/code] will make each control wait for the
 ## previous one to finish its animation to start its own.[br]
-## 
+##
 ## - A delay between [code]0.0[/code] and [code]1.0[/code] will make
 ## controls intertwine animations, giving a smoother effect.
 @export_range(-0.01, 1.0, 0.01) var delay := -0.01
@@ -259,7 +267,7 @@ var _status: int = Status.OK
 @onready var _group: Control = get_node(group) if group else null
 
 ## Tweener used by this transition to perform animations.
-@onready var _tween: Tween = Tween.new()
+@onready var _tween: Tween
 
 
 # Built-in overrides
@@ -268,10 +276,10 @@ func _ready() -> void:
 		return
 
 	_get_custom_settings()
-	_transition = _tween.get("TRANS_" + transition_type)
-	_ease = _tween.get("EASE_" + ease_type)
-
-	#add_child(_tween)
+	var temp_tween := create_tween()
+	temp_tween.tween_interval(0.1)
+	_transition = temp_tween.get("TRANS_" + transition_type)
+	_ease = temp_tween.get("EASE_" + ease_type)
 
 	if _transition_valid():
 		if not layout_id:
@@ -290,6 +298,14 @@ func _ready() -> void:
 	else:
 		push_error("Invalid GuiTransition configuration: %s" % self.get_path())
 		queue_free()
+
+
+# Invalidates existing tween and creates a new one.
+func _init_tween() -> void:
+	if _tween and _tween.is_valid():
+		_tween.kill()
+
+	_tween = create_tween()
 
 
 # Remove reference from singleton.
@@ -408,7 +424,7 @@ func _go_to(id := "", function = null, args := []):
 	if _transition_valid() and _layout.visible:
 		if id != layout_id:
 			_hide("", function, args)
-			await _tween.tween_all_completed
+			await _tween.finished
 			GuiTransitions._for_each_layout("_show", [id])
 		else:
 			GuiTransitions._for_each_layout("_show", [id])
@@ -419,7 +435,7 @@ func _update(function = null, args := []):
 	if _transition_valid() and _layout.visible:
 
 		_hide(layout_id, function, args)
-		await _tween.tween_all_completed
+		await _tween.finished
 		_show(layout_id)
 
 
@@ -429,8 +445,8 @@ func _show(id := ""):
 		_layout.visible = true
 		_status = Status.SHOWING
 
-		if fade_layout:
-			_fade_in_layout()
+		_init_tween()
+		_fade_in_layout()
 
 		for _node_info in _node_infos:
 			var node_info: NodeInfo = _node_info
@@ -442,8 +458,7 @@ func _show(id := ""):
 			else:
 				_slide_in(node_info)
 
-		_tween.start()
-		await _tween.tween_all_completed
+		await _tween.finished
 		_is_shown = true
 		_status = Status.OK
 
@@ -456,8 +471,8 @@ func _hide(id := "", function = null, args := []):
 	if _transition_valid() and _layout.visible and (not id or id == layout_id) and _status == Status.OK:
 		_status = Status.HIDING
 
-		if fade_layout:
-			_fade_out_layout()
+		_init_tween()
+		_fade_out_layout()
 
 		for node_info in _node_infos:
 			if animation_leave == Anim.FADE:
@@ -467,8 +482,7 @@ func _hide(id := "", function = null, args := []):
 			else:
 				_slide_out(node_info)
 
-		_tween.start()
-		await _tween.tween_all_completed
+		await _tween.finished
 
 		if function:
 			function.call_funcv(args)
@@ -497,160 +511,158 @@ func _transition_valid() -> bool:
 
 ## Performs the slide in transition.
 func _slide_in(node_info: NodeInfo):
+	node_info.init_tween()
 	_fade_in_node(node_info)
 
-	_tween.interpolate_method(
-		node_info, "set_position",
-		node_info.get_target_position(animation_enter), node_info.initial_position,
-		node_info.duration,
-		_transition,
-		_ease,
-		node_info.delay
-	)
+	if node_info.delay:
+		node_info.tween.tween_interval(node_info.delay)
+
+	node_info.tween\
+		.set_trans(_transition)\
+		.set_ease(_ease)\
+		.tween_method(
+			node_info.set_position,
+			node_info.get_target_position(animation_enter),
+			node_info.initial_position,
+			node_info.duration
+		)
 
 	node_info.unset_clickable()
-	await _tween.tween_all_completed
+	await node_info.tween.finished
 	node_info.revert_clickable()
 
 
 ## Performs the slide out transition.
 func _slide_out(node_info: NodeInfo):
+	node_info.init_tween()
 	node_info.node.custom_minimum_size = Vector2(1, 1)
 	node_info.node.custom_minimum_size = Vector2.ZERO
 
-	_tween.interpolate_method(
-		node_info, "set_position",
-		node_info.initial_position, node_info.get_target_position(animation_leave),
-		node_info.duration,
-		_transition,
-		_ease,
-		node_info.delay
-	)
+	if node_info.delay:
+		node_info.tween.tween_interval(node_info.delay)
+
+	node_info.tween\
+		.set_trans(_transition)\
+		.set_ease(_ease)\
+		.tween_method(
+			node_info.set_position,
+			node_info.initial_position,
+			node_info.get_target_position(animation_leave),
+			node_info.duration
+		)
 
 	node_info.unset_clickable()
-	await _tween.tween_all_completed
+	await node_info.tween.finished
 	node_info.node.modulate.a = 0.0
 
 
 ## Performs the fade in transition.
 func _fade_in(node_info: NodeInfo):
+	node_info.init_tween()
 	node_info.set_position(Vector2.ZERO)
 
-	_tween.interpolate_property(
-		node_info.node, "modulate:a",
-		0.0, 1.0,
-		node_info.duration,
-		_transition,
-		_ease,
-		node_info.delay
-	)
+	if node_info.delay:
+		node_info.tween.tween_interval(node_info.delay)
+
+	node_info.tween\
+		.set_trans(_transition)\
+		.set_ease(_ease)\
+		.tween_property(node_info.node, "modulate:a", 1.0, node_info.duration)
+
 	node_info.unset_clickable()
-	await _tween.tween_all_completed
+	await node_info.tween.finished
 	node_info.revert_clickable()
 
 
 ## Performs the fade out transition.
 func _fade_out(node_info: NodeInfo):
-	_tween.interpolate_property(
-		node_info.node, "modulate:a",
-		1.0, 0.0,
-		node_info.duration,
-		_transition,
-		_ease,
-		node_info.delay
-	)
+	node_info.init_tween()
+
+	if node_info.delay:
+		node_info.tween.tween_interval(node_info.delay)
+
+	node_info.tween\
+		.set_trans(_transition)\
+		.set_ease(_ease)\
+		.tween_property(node_info.node, "modulate:a", 0.0, node_info.duration)
+
 	node_info.unset_clickable()
 
 
 ## Performs the scale in transition.
 func _scale_in(node_info: NodeInfo):
+	node_info.init_tween()
 	node_info.set_position(Vector2.ZERO)
 
 	_fade_in_node(node_info)
 
-	_tween.interpolate_callback(
-		node_info,
-		node_info.delay + node_info.duration / 10.0,
-		"set_pivot_to_center"
-	)
+	node_info.tween.tween_callback(node_info.set_pivot_to_center)
 
-	_tween.interpolate_property(
-		node_info.node, "scale",
-		node_info.get_target_scale(animation_enter), node_info.initial_scale,
-		node_info.duration,
-		_transition,
-		_ease,
-		node_info.delay
-	)
+	if node_info.delay:
+		node_info.tween.tween_interval(node_info.delay)
+
+	node_info.tween\
+		.set_trans(_transition)\
+		.set_ease(_ease)\
+		.tween_property(node_info.node, "scale", node_info.initial_scale, node_info.duration)
 
 	node_info.unset_clickable()
 
-	await _tween.tween_all_completed
+	await node_info.tween.finished
 	node_info.revert_clickable()
 
 
 ## Performs the scale out transition.
 func _scale_out(node_info: NodeInfo):
+	node_info.init_tween()
 	var initial_scale := node_info.node.scale as Vector2
 
-	_tween.interpolate_callback(
-		node_info,
-		node_info.delay + duration / 10.0,
-		"set_pivot_to_center"
-	)
+	node_info.tween.tween_callback(node_info.set_pivot_to_center)
 
-	_tween.interpolate_property(
-		node_info.node, "scale",
-		initial_scale, node_info.get_target_scale(animation_leave),
-		node_info.duration,
-		_transition,
-		_ease,
-		node_info.delay
-	)
+	if node_info.delay:
+		node_info.tween.tween_interval(node_info.delay)
+
+	node_info.tween\
+		.set_trans(_transition)\
+		.set_ease(_ease)\
+		.tween_property(node_info.node, "scale", node_info.get_target_scale(animation_leave), node_info.duration)
 
 	node_info.unset_clickable()
-	await _tween.tween_all_completed
+	await node_info.tween.finished
 	node_info.node.modulate.a = 0.0
 
 
 ## Gradually fade in the whole layout along with individual transitions.
 func _fade_in_layout() -> void:
-	_tween.interpolate_property(
-		_layout, "modulate:a",
-		0.0, 1.0,
-		duration,
-		_transition,
-		_ease
-	)
+	if not fade_layout:
+		_tween.tween_interval(duration)
+		return
+
+	_tween.tween_property(_layout, "modulate:a", 1.0, duration)
 
 
 ## Gradually fade out the whole layout along with individual transitions.
 func _fade_out_layout() -> void:
-	_tween.interpolate_property(
-		_layout, "modulate:a",
-		1.0, 0.0,
-		duration,
-		_transition,
-		_ease
-	)
+	if not fade_layout:
+		_tween.tween_interval(duration)
+		return
+
+	_tween.tween_property(_layout, "modulate:a", 0.0, duration)
 
 
 ## Fix of node pop-in in some cases.
 func _fade_in_node(node_info: NodeInfo) -> void:
 	var node_duration := max(node_info.duration / 3.0, 0.09)
+	var tween := node_info.node.create_tween()
 
-	_tween.interpolate_property(
-		node_info.node, "modulate:a",
-		0.0, 1.0,
-		node_duration,
-		Tween.TRANS_QUAD,
-		Tween.EASE_IN_OUT,
-		node_info.delay
-	)
+	if node_info.delay:
+		tween.tween_interval(node_info.delay)
+
+	tween.tween_property(node_info.node, "modulate:a", 1.0, node_duration)
 
 
 ## Get nodes from group or array of node paths set by the user.
-func _get_nodes_from_containers() -> Array:
+func _get_nodes_from_containers() -> Array[Control]:
 	_controls.clear()
 
 	for node_path in controls:
@@ -660,9 +672,11 @@ func _get_nodes_from_containers() -> Array:
 			_controls.push_back(node)
 
 	var nodes := _controls if _controls.size() else _group.get_children()
-	var filtered_nodes := []
+	var filtered_nodes: Array[Control] = []
 
-	for node in nodes:
+	for n in nodes:
+		var node: Node = n
+
 		if node and node.is_class("Control") and not node.get_class() == "Control":
 			filtered_nodes.push_back(node)
 
