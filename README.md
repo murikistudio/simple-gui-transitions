@@ -5,8 +5,9 @@
 
 *"Simple GUI transitions to swap menus elegantly."*
 
-This plugin gives access to the `GuiTransition` node which allows to transition multiple GUI layouts easily. Designed for **Godot 4.x**.
-See the example scene on `addons/simple-gui-transitions/example` to see it in action.
+This plugin gives access to the `GuiTransition` node which allows to transition multiple GUI layouts easily.
+Designed for **Godot 4.x** (3.x version available [here](https://github.com/murikistudio/simple-gui-transitions/tree/godot-3)).
+See the example scene on `addons/simple-gui-transitions/example` to see this plugin in action.
 
 ## Project Settings
 The default transition settings can be set on `Project Settings > GUI Transitions > Config`.
