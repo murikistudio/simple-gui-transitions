@@ -563,6 +563,7 @@ func _slide_out(node_info: NodeInfo):
 func _fade_in(node_info: NodeInfo):
 	node_info.init_tween()
 	node_info.set_position(Vector2.ZERO)
+	node_info.node.modulate.a = 0.0
 
 	if node_info.delay:
 		node_info.tween.tween_interval(node_info.delay)
