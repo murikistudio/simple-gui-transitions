@@ -10,7 +10,7 @@ Designed for **Godot 4.x** (3.x version available [here](https://github.com/muri
 See the example scene on `addons/simple-gui-transitions/example` to see this plugin in action.
 
 ## Project Settings
-The default transition settings can be set on `Project Settings > GUI Transitions > Config`.
+The default transition settings can be set on `Project Settings > GUI Transitions > Config` (you may need to enable `Advanced Settings` to see this section).
 Those settings will be applied on top of any default property on the node `GuiTransition`. This is useful to increase or decrease the speed of transitions on the whole project, for example. See each property description below.
 
 ## Node `GuiTransition`
