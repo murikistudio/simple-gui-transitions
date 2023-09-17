@@ -5,10 +5,7 @@
 
 *"Simple GUI transitions to swap menus elegantly."*
 
-## WIP WARNING
-**This branch is a WIP (work in progress) to port the addon from Godot 3.x to Godot 4.x. Do not try to use it yet, wait for an official release.**
-
-This plugin gives access to the `GuiTransition` node which allows to transition multiple GUI layouts easily. Designed for Godot 4.x.
+This plugin gives access to the `GuiTransition` node which allows to transition multiple GUI layouts easily. Designed for **Godot 4.x**.
 See the example scene on `addons/simple-gui-transitions/example` to see it in action.
 
 ## Project Settings
@@ -91,14 +88,14 @@ The signal `show_completed` is emited after a layout has been shown.
 The signal `hide_completed` is emited after a layout has been hidden.
 
 ### Public Methods
-#### go_to(id: String, function: FuncRef, args: Array)
+#### go_to(id: String, function: Callable)
 The method `go_to` hides the current layout and shows the layout with the given `id`.
-If `function` (optional) and `args` (optional) are passed in, the `function` will be executed halfway through.
+If `function` (optional) is passed in, the `function` will be executed halfway through.
 Both signals `hide_completed` and `show_completed` are emited accordingly.
 
-#### update(function: FuncRef, args: Array)
+#### update(function: Callable)
 The method `update` hides and shows the current layout.
-If `function` (optional) and `args` (optional) are passed in, the `function` will be executed halfway through.
+If `function` (optional) is passed in, the `function` will be executed halfway through.
 Both signals `hide_completed` and `show_completed` are emited accordingly.
 
 #### show(id: String)
