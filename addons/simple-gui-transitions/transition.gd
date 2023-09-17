@@ -600,6 +600,7 @@ func _scale_in(node_info: NodeInfo):
 	_fade_in_node(node_info)
 
 	node_info.tween.tween_callback(node_info.set_pivot_to_center)
+	node_info.tween.tween_callback(node_info.node.set.bind("scale", node_info.get_target_scale(animation_enter)))
 
 	if node_info.delay:
 		node_info.tween.tween_interval(node_info.delay)
@@ -618,9 +619,9 @@ func _scale_in(node_info: NodeInfo):
 ## Performs the scale out transition.
 func _scale_out(node_info: NodeInfo):
 	node_info.init_tween()
-	var initial_scale := node_info.node.scale as Vector2
 
 	node_info.tween.tween_callback(node_info.set_pivot_to_center)
+	node_info.tween.tween_callback(node_info.node.set.bind("scale", node_info.initial_scale))
 
 	if node_info.delay:
 		node_info.tween.tween_interval(node_info.delay)
