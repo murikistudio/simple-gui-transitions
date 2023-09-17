@@ -597,6 +597,7 @@ func _scale_in(node_info: NodeInfo):
 	node_info.init_tween()
 	node_info.set_position(Vector2.ZERO)
 
+	node_info.node.modulate.a = 0.0
 	_fade_in_node(node_info)
 
 	node_info.tween.tween_callback(node_info.set_pivot_to_center)
