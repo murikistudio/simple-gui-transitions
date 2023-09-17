@@ -5,13 +5,14 @@
 
 *"Simple GUI transitions to swap menus elegantly."*
 
-This plugin gives access to the `GuiTransition` node which allows to transition multiple GUI layouts easily. Designed for Godot 3.5.x.
+## WIP WARNING
+**This branch is a WIP (work in progress) to port the addon from Godot 3.x to Godot 4.x. Do not try to use it yet, wait for an official release.**
+
+This plugin gives access to the `GuiTransition` node which allows to transition multiple GUI layouts easily. Designed for Godot 4.x.
 See the example scene on `addons/simple-gui-transitions/example` to see it in action.
 
-[Download it on Godot Asset Library](https://godotengine.org/asset-library/asset/1613)
-
 ## Project Settings
-As of version v0.1.0 onwards the default transition settings can be set on `Project Settings > GUI Transitions > Config`.
+The default transition settings can be set on `Project Settings > GUI Transitions > Config`.
 Those settings will be applied on top of any default property on the node `GuiTransition`. This is useful to increase or decrease the speed of transitions on the whole project, for example. See each property description below.
 
 ## Node `GuiTransition`
@@ -71,7 +72,7 @@ Example: a `HBoxContainer` or `VBoxContainer` with several buttons as children w
 **If not set, `Controls` must be selected.**
 
 #### Center Pivot
-When `Animation Enter` or `Animation Leave` is one of the scale animations, it will center the control's `rect_pivot_offset` property.
+When `Animation Enter` or `Animation Leave` is one of the scale animations, it will center the control's `pivot_offset` property.
 
 #### Transition Type
 Transition curve of the animations. Same as `Tween.TransitionType`.

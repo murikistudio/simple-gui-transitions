@@ -1,78 +1,80 @@
-[gd_resource type="Theme" load_steps=8 format=2]
+[gd_resource type="Theme" load_steps=8 format=3 uid="uid://cxbdqv0cxcy1m"]
 
-[ext_resource path="res://addons/simple-gui-transitions/example/stanberry.ttf" type="DynamicFontData" id=1]
+[ext_resource type="FontFile" uid="uid://ct0m40v1h6h20" path="res://addons/simple-gui-transitions/example/stanberry.ttf" id="1"]
 
-[sub_resource type="StyleBoxFlat" id=1]
-bg_color = Color( 0.67, 0.67, 0.67, 1 )
+[sub_resource type="StyleBoxFlat" id="1"]
+bg_color = Color(0.67, 0.67, 0.67, 1)
 border_width_left = 6
 border_width_top = 6
 border_width_right = 6
 border_width_bottom = 6
-border_color = Color( 0.28, 0.28, 0.28, 1 )
+border_color = Color(0.28, 0.28, 0.28, 1)
 corner_radius_top_left = 20
 corner_radius_top_right = 20
 corner_radius_bottom_right = 20
 corner_radius_bottom_left = 20
 
-[sub_resource type="StyleBoxFlat" id=2]
-bg_color = Color( 0.171, 0.69345, 0.9, 1 )
+[sub_resource type="StyleBoxFlat" id="2"]
+bg_color = Color(0.171, 0.69345, 0.9, 1)
 border_width_left = 6
 border_width_top = 6
 border_width_right = 6
 border_width_bottom = 6
-border_color = Color( 0, 0.52, 0.6, 1 )
+border_color = Color(0, 0.52, 0.6, 1)
 corner_radius_top_left = 20
 corner_radius_top_right = 20
 corner_radius_bottom_right = 20
 corner_radius_bottom_left = 20
 
-[sub_resource type="StyleBoxFlat" id=3]
-bg_color = Color( 0.1729, 0.701155, 0.91, 1 )
+[sub_resource type="StyleBoxFlat" id="3"]
+bg_color = Color(0.1729, 0.701155, 0.91, 1)
 border_width_left = 6
 border_width_top = 6
 border_width_right = 6
 border_width_bottom = 6
-border_color = Color( 0, 0.243137, 0.278431, 1 )
+border_color = Color(0, 0.243137, 0.278431, 1)
 corner_radius_top_left = 20
 corner_radius_top_right = 20
 corner_radius_bottom_right = 20
 corner_radius_bottom_left = 20
 
-[sub_resource type="StyleBoxFlat" id=4]
-bg_color = Color( 0.129412, 0.517647, 0.670588, 1 )
+[sub_resource type="StyleBoxFlat" id="4"]
+bg_color = Color(0.129412, 0.517647, 0.670588, 1)
 border_width_left = 6
 border_width_top = 6
 border_width_right = 6
 border_width_bottom = 6
-border_color = Color( 0, 0.243137, 0.278431, 1 )
+border_color = Color(0, 0.243137, 0.278431, 1)
 corner_radius_top_left = 20
 corner_radius_top_right = 20
 corner_radius_bottom_right = 20
 corner_radius_bottom_left = 20
 
-[sub_resource type="StyleBoxFlat" id=5]
-bg_color = Color( 0.0855, 0.346725, 0.45, 1 )
+[sub_resource type="StyleBoxFlat" id="5"]
+bg_color = Color(0.0855, 0.346725, 0.45, 1)
 border_width_left = 6
 border_width_top = 6
 border_width_right = 6
 border_width_bottom = 6
-border_color = Color( 0, 0.243137, 0.278431, 1 )
+border_color = Color(0, 0.243137, 0.278431, 1)
 corner_radius_top_left = 20
 corner_radius_top_right = 20
 corner_radius_bottom_right = 20
 corner_radius_bottom_left = 20
 
-[sub_resource type="DynamicFont" id=6]
-size = 22
-outline_size = 3
-outline_color = Color( 0, 0, 0, 1 )
-font_data = ExtResource( 1 )
+[sub_resource type="FontVariation" id="FontVariation_8qwyc"]
+base_font = ExtResource("1")
 
 [resource]
-default_font = SubResource( 6 )
-Button/styles/disabled = SubResource( 1 )
-Button/styles/focus = SubResource( 2 )
-Button/styles/hover = SubResource( 3 )
-Button/styles/normal = SubResource( 4 )
-Button/styles/pressed = SubResource( 5 )
-TooltipLabel/colors/font_color = Color( 1, 1, 1, 1 )
+default_font = SubResource("FontVariation_8qwyc")
+default_font_size = 18
+Button/colors/font_outline_color = Color(0, 0, 0, 1)
+Button/constants/outline_size = 10
+Button/styles/disabled = SubResource("1")
+Button/styles/focus = SubResource("2")
+Button/styles/hover = SubResource("3")
+Button/styles/normal = SubResource("4")
+Button/styles/pressed = SubResource("5")
+Label/colors/font_outline_color = Color(0, 0, 0, 1)
+Label/constants/outline_size = 10
+TooltipLabel/colors/font_color = Color(1, 1, 1, 1)
