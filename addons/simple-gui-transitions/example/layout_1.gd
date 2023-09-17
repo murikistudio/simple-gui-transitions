@@ -8,8 +8,10 @@ func print_function(message: String) -> void:
 
 # Signal handlers
 func _on_ButtonUpdate_pressed() -> void:
-	var optional_callback := print_function.bind("Layout1 updated")
+	var optional_callback := print_function.bind("Layout1 update callback")
 	GuiTransitions.update(optional_callback)
+	await GuiTransitions.show_completed
+	prints("Layout1 after update")
 
 
 func _on_ButtonHide_pressed() -> void:
