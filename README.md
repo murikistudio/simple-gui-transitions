@@ -11,8 +11,13 @@ See the example scene on `addons/simple-gui-transitions/example` to see this plu
 
 [Download it on Godot Asset Library](https://godotengine.org/asset-library/asset/1613)
 
-## Project Settings
-As of version v0.1.0 onwards the default transition settings can be set on `Project Settings > GUI Transitions > Config`.
+## Installation
+- Install the plugin through the [AssetLib](https://godotengine.org/asset-library/asset/1613) **or** copy the plugin `addons` folder to your project's directory
+- Enable the plugin on `Project > Project Settings > Plugins`
+- Reload your current project
+
+## Global Settings
+As of version v0.1.0 onwards the default transition settings can be set on `Project > Project Settings > GUI Transitions > Config`.
 Those settings will be applied on top of any default property on the node `GuiTransition`. This is useful to increase or decrease the speed of transitions on the whole project, for example. See each property description below.
 
 ## Node `GuiTransition`
@@ -40,13 +45,13 @@ The animation type of the controls when leaving the screen. The available animat
 - Scale vertical, horizontal and both
 
 #### Duration
-The total animation duration in seconds. A negative value such as the default `-0.01` will make the transition use the default value set in Project Settings.
+The total animation duration in seconds. A negative value such as the default `-0.01` will make the transition use the default value set in `Project Settings`.
 
 #### Delay
 Delay ratio between transitions for each node contained in `Group` or `Controls`.
 The default value is `0.5`.
 
-- A negative value such as the default `-0.01` will make the transition use the default value set in Project Settings.
+- A negative value such as the default `-0.01` will make the transition use the default value set in `Project Settings`.
 - A delay of `0.0` means no delay, that is, all controls will start and finish their animations at the same time.
 - A delay of `1.0` will make each control wait for the previous one to finish its animation to start its own.
 - A delay between `0.0` and `1.0` will make controls intertwine animations, giving a smoother effect.
