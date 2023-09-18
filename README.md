@@ -9,9 +9,14 @@ This plugin gives access to the `GuiTransition` node which allows to transition 
 Designed for **Godot 4.x** (3.x version available [here](https://github.com/murikistudio/simple-gui-transitions/tree/godot-3)).
 See the example scene on `addons/simple-gui-transitions/example` to see this plugin in action.
 
-## Project Settings
-The default transition settings can be set on `Project Settings > GUI Transitions > Config` (you may need to enable `Advanced Settings` to see this section).
-Those settings will be applied on top of any default property on the node `GuiTransition`. This is useful to increase or decrease the speed of transitions on the whole project, for example. See each property description below.
+## Installation
+- Install the plugin through the [AssetLib](https://godotengine.org/asset-library/asset/2134) **or** copy the plugin `addons` folder to your project's directory
+- Enable the plugin on `Project > Project Settings > Plugins`
+- Reload your current project
+
+## Global Settings
+The default transition settings can be set on `Project > Project Settings > GUI Transitions > Config` (you may need to enable `Advanced Settings` to see this section).
+Those settings will be applied on top of any `Default` property on the node `GuiTransition`. This is useful to increase or decrease the speed of transitions on the whole project, for example. See each property description below.
 
 ## Node `GuiTransition`
 The node `GuiTransition` is responsible for transitioning a specific layout.
@@ -38,13 +43,13 @@ The animation type of the controls when leaving the screen. The available animat
 - Scale vertical, horizontal and both
 
 #### Duration
-The total animation duration in seconds. A negative value such as the default `-0.01` will make the transition use the default value set in Project Settings.
+The total animation duration in seconds. A negative value such as the default `-0.01` will make the transition use the default value set in `Project Settings`.
 
 #### Delay
 Delay ratio between transitions for each node contained in `Group` or `Controls`.
 The default value is `0.5`.
 
-- A negative value such as the default `-0.01` will make the transition use the default value set in Project Settings.
+- A negative value such as the default `-0.01` will make the transition use the default value set in `Project Settings`.
 - A delay of `0.0` means no delay, that is, all controls will start and finish their animations at the same time.
 - A delay of `1.0` will make each control wait for the previous one to finish its animation to start its own.
 - A delay between `0.0` and `1.0` will make controls intertwine animations, giving a smoother effect.
