@@ -9,6 +9,8 @@ This plugin gives access to the `GuiTransition` node which allows to transition 
 Designed for **Godot 4.x** (3.x version available [here](https://github.com/murikistudio/simple-gui-transitions/tree/godot-3)).
 See the example scene on `addons/simple-gui-transitions/example` to see this plugin in action.
 
+[Download it on Godot Asset Library](https://godotengine.org/asset-library/asset/2134)
+
 ## Installation
 - Install the plugin through the [AssetLib](https://godotengine.org/asset-library/asset/2134) **or** copy the plugin `addons` folder to your project's directory
 - Enable the plugin on `Project > Project Settings > Plugins`
