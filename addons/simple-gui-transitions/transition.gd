@@ -88,6 +88,8 @@ class NodeInfo extends RefCounted:
 		if _auto_start:
 			node.modulate.a = 0.0
 
+		set_pivot_to_center()
+
 	# Invalidates existing tween and creates a new one.
 	func init_tween() -> void:
 		if tween and tween.is_valid():
@@ -296,6 +298,7 @@ func _ready() -> void:
 			_layout.modulate.a = 0.0
 
 		if _layout.visible and auto_start:
+			await get_tree().process_frame
 			_show()
 
 	else:
