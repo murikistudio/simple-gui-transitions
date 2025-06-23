@@ -1,8 +1,8 @@
 [gd_scene load_steps=4 format=3 uid="uid://cdba1niudigw2"]
 
-[ext_resource type="Script" path="res://addons/simple-gui-transitions/example/layout_3.gd" id="1"]
+[ext_resource type="Script" uid="uid://bwedagipx1cfm" path="res://addons/simple-gui-transitions/example/layout_3.gd" id="1"]
 [ext_resource type="Theme" uid="uid://cxbdqv0cxcy1m" path="res://addons/simple-gui-transitions/example/theme.tres" id="2"]
-[ext_resource type="Script" path="res://addons/simple-gui-transitions/transition.gd" id="3"]
+[ext_resource type="Script" uid="uid://bimelmc1ce1b2" path="res://addons/simple-gui-transitions/transition.gd" id="3"]
 
 [node name="Layout3" type="Control"]
 layout_mode = 3
