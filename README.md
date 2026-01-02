@@ -197,11 +197,23 @@ Ease curve of the animations. Same as `Tween.EaseType`.
 The singleton `GuiTransitions` allows to trigger the transitions globally and swap GUI layouts.
 
 ### Signals
+#### show_started
+Emitted when a layout is about to be shown.
+
 #### show_completed
-The signal `show_completed` is emited after a layout has been shown.
+Emitted after a layout has been shown.
+
+#### hide_started
+Emited when a layout is about to be hidden.
 
 #### hide_completed
-The signal `hide_completed` is emited after a layout has been hidden.
+Emitted after a layout has been hidden.
+
+#### transition_started
+Emmited when a layout is about to be shown or hidden.
+
+#### transition_completed
+Emited after a layout has been shown or hidden.
 
 ### Public Methods
 **Note**: Optional arguments in the methods below are suffixed with `?` (e.g. `function?`).
@@ -209,7 +221,7 @@ The signal `hide_completed` is emited after a layout has been hidden.
 #### go_to(id: String, function?: Callable)
 The method `go_to` hides the current layout and shows the layout with the given `id`.
 If `function` (optional) is passed in, the `function` will be executed halfway through.
-Both signals `hide_completed` and `show_completed` are emited accordingly.
+Both signals `hide_completed` and `show_completed` are emitted accordingly.
 
 #### update(function?: Callable)
 The method `update` hides and shows the current layout.
