@@ -3,11 +3,23 @@ extends Node
 
 
 # Signals
+## Emited when a layout is about to be shown.
+signal show_started
+
 ## Emited after a layout has been shown.
 signal show_completed
 
+## Emited when a layout is about to be hidden.
+signal hide_started
+
 ## Emited after a layout has been hidden.
 signal hide_completed
+
+## Emmited when a layout is about to be shown or hidden.
+signal transition_started
+
+## Emited after a layout has been shown or hidden.
+signal transition_completed
 
 
 # Variables
