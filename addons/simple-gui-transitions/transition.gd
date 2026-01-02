@@ -99,6 +99,9 @@ class NodeInfo extends RefCounted:
 
 	# Invalidates existing tween and creates a new one.
 	func init_tween() -> void:
+		if not is_instance_valid(node):
+			return
+			
 		if tween and tween.is_valid():
 			tween.kill()
 
@@ -106,10 +109,14 @@ class NodeInfo extends RefCounted:
 
 	# Set node to unclickable while in transition.
 	func unset_clickable():
+		if not is_instance_valid(node):
+			return
 		node.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	# Revert initial node clickable value after transition.
 	func revert_clickable():
+		if not is_instance_valid(node):
+			return
 		node.mouse_filter = initial_mouse_filter
 
 	# Get the zero scale of node according to the animation type.
@@ -143,10 +150,14 @@ class NodeInfo extends RefCounted:
 
 	# Reset node scale to initial values.
 	func reset_scale() -> void:
+		if not is_instance_valid(node):
+			return
 		node.scale = initial_scale
 
 	# Reset node anchors to initial values.
 	func reset_anchors(direction: String) -> void:
+		if not is_instance_valid(node):
+			return
 		if direction in ["both", "h"]:
 			node.anchor_left = initial_anchor_h.x
 			node.anchor_right = initial_anchor_h.y
@@ -171,10 +182,14 @@ class NodeInfo extends RefCounted:
 		return offset
 
 	func set_pivot_to_center() -> void:
+		if not is_instance_valid(node):
+			return
 		if center_pivot:
 			node.pivot_offset = node.size / 2
 
 	func set_position(position: Vector2) -> void:
+		if not is_instance_valid(node):
+			return
 		var _shader := node.material as ShaderMaterial
 
 		if _shader:
@@ -471,7 +486,8 @@ func _go_to(id := "", function = null):
 	if _transition_valid() and _layout.visible:
 		if id != layout_id:
 			_hide("", function)
-			await _tween.finished
+			if _tween and _tween.is_valid():
+				await _tween.finished
 			GuiTransitions._for_each_layout("_show", [id])
 		else:
 			GuiTransitions._for_each_layout("_show", [id])
@@ -482,7 +498,8 @@ func _update(function = null):
 	if _transition_valid() and _layout.visible:
 
 		_hide(layout_id, function)
-		await _tween.finished
+		if _tween and _tween.is_valid():
+			await _tween.finished
 		_show(layout_id)
 
 
@@ -505,7 +522,8 @@ func _show(id := ""):
 			else:
 				_slide_in(node_info)
 
-		await _tween.finished
+		if _tween and _tween.is_valid():
+			await _tween.finished
 		_is_shown = true
 		_status = Status.OK
 
@@ -529,7 +547,8 @@ func _hide(id := "", function = null):
 			else:
 				_slide_out(node_info)
 
-		await _tween.finished
+		if _tween and _tween.is_valid():
+			await _tween.finished
 
 		if typeof(function) == TYPE_CALLABLE:
 			(function as Callable).call()
@@ -555,6 +574,8 @@ func _transition_valid() -> bool:
 ## Performs the slide in transition.
 func _slide_in(node_info: NodeInfo):
 	node_info.init_tween()
+	if not node_info.tween or not node_info.tween.is_valid():
+		return
 	node_info.reset_scale()
 	node_info.node.modulate.a = 0.0
 	_fade_in_node(node_info)
@@ -599,13 +620,16 @@ func _slide_in(node_info: NodeInfo):
 			)
 
 	node_info.unset_clickable()
-	await node_info.tween.finished
+	if node_info.tween and node_info.tween.is_valid():
+		await node_info.tween.finished
 	node_info.revert_clickable()
 
 
 ## Performs the slide out transition.
 func _slide_out(node_info: NodeInfo):
 	node_info.init_tween()
+	if not node_info.tween or not node_info.tween.is_valid():
+		return
 	node_info.reset_scale()
 	node_info.node.custom_minimum_size = Vector2(1, 1)
 	node_info.node.custom_minimum_size = Vector2.ZERO
@@ -648,13 +672,17 @@ func _slide_out(node_info: NodeInfo):
 			)
 
 	node_info.unset_clickable()
-	await node_info.tween.finished
-	node_info.node.modulate.a = 0.0
+	if node_info.tween and node_info.tween.is_valid():
+		await node_info.tween.finished
+	if is_instance_valid(node_info.node):
+		node_info.node.modulate.a = 0.0
 
 
 ## Performs the fade in transition.
 func _fade_in(node_info: NodeInfo):
 	node_info.init_tween()
+	if not node_info.tween or not node_info.tween.is_valid():
+		return
 	node_info.set_position(Vector2.ZERO)
 	node_info.reset_anchors("both")
 	node_info.reset_scale()
@@ -669,13 +697,16 @@ func _fade_in(node_info: NodeInfo):
 		.tween_property(node_info.node, "modulate:a", 1.0, node_info.duration)
 
 	node_info.unset_clickable()
-	await node_info.tween.finished
+	if node_info.tween and node_info.tween.is_valid():
+		await node_info.tween.finished
 	node_info.revert_clickable()
 
 
 ## Performs the fade out transition.
 func _fade_out(node_info: NodeInfo):
 	node_info.init_tween()
+	if not node_info.tween or not node_info.tween.is_valid():
+		return
 	node_info.reset_anchors("both")
 	node_info.reset_scale()
 
@@ -693,6 +724,8 @@ func _fade_out(node_info: NodeInfo):
 ## Performs the scale in transition.
 func _scale_in(node_info: NodeInfo):
 	node_info.init_tween()
+	if not node_info.tween or not node_info.tween.is_valid():
+		return
 	node_info.set_position(Vector2.ZERO)
 	node_info.reset_anchors("both")
 
@@ -712,13 +745,16 @@ func _scale_in(node_info: NodeInfo):
 
 	node_info.unset_clickable()
 
-	await node_info.tween.finished
+	if node_info.tween and node_info.tween.is_valid():
+		await node_info.tween.finished
 	node_info.revert_clickable()
 
 
 ## Performs the scale out transition.
 func _scale_out(node_info: NodeInfo):
 	node_info.init_tween()
+	if not node_info.tween or not node_info.tween.is_valid():
+		return
 	node_info.reset_anchors("both")
 	node_info.reset_scale()
 
@@ -734,8 +770,10 @@ func _scale_out(node_info: NodeInfo):
 		.tween_property(node_info.node, "scale", node_info.get_target_scale(animation_leave), node_info.duration)
 
 	node_info.unset_clickable()
-	await node_info.tween.finished
-	node_info.node.modulate.a = 0.0
+	if node_info.tween and node_info.tween.is_valid():
+		await node_info.tween.finished
+	if is_instance_valid(node_info.node):
+		node_info.node.modulate.a = 0.0
 
 
 ## Gradually fade in the whole layout along with individual transitions.
