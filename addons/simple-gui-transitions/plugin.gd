@@ -11,6 +11,7 @@ const SINGLETON_NAME := "GuiTransitions"
 # Preloads
 const DefaultValues := preload(BASE_PATH + "default_values.gd")
 const TransitionNode := preload(BASE_PATH + "transition.gd")
+const TransitionIcon = preload(BASE_PATH + "icon.png")
 
 
 # Built-in overrides
@@ -29,7 +30,7 @@ func _disable_plugin() -> void:
 # Automatically non-existing settings to project settings.
 func _enter_tree() -> void:
 	var replace_existing := DEBUG
-	add_custom_type("GuiTransition", "Node", TransitionNode, load(BASE_PATH + "icon.png"))
+	add_custom_type("GuiTransition", "Node", TransitionNode, TransitionIcon)
 	_add_default_settings(replace_existing)
 
 
