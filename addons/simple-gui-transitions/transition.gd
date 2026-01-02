@@ -101,7 +101,7 @@ class NodeInfo extends RefCounted:
 	func init_tween() -> void:
 		if not is_instance_valid(node):
 			return
-			
+
 		if tween and tween.is_valid():
 			tween.kill()
 
@@ -522,12 +522,17 @@ func _show(id := ""):
 			else:
 				_slide_in(node_info)
 
+		GuiTransitions.transition_started.emit()
+		GuiTransitions.show_started.emit()
+
 		if _tween and _tween.is_valid():
 			await _tween.finished
+
 		_is_shown = true
 		_status = Status.OK
 
 		if GuiTransitions.is_shown(layout_id):
+			GuiTransitions.transition_completed.emit()
 			GuiTransitions.show_completed.emit()
 
 
@@ -547,6 +552,9 @@ func _hide(id := "", function = null):
 			else:
 				_slide_out(node_info)
 
+		GuiTransitions.transition_started.emit()
+		GuiTransitions.hide_started.emit()
+
 		if _tween and _tween.is_valid():
 			await _tween.finished
 
@@ -558,6 +566,7 @@ func _hide(id := "", function = null):
 		_status = Status.OK
 
 		if GuiTransitions.is_hidden(layout_id):
+			GuiTransitions.transition_completed.emit()
 			GuiTransitions.hide_completed.emit()
 
 
