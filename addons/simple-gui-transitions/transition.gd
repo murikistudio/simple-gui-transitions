@@ -239,7 +239,7 @@ const DEBUG := false
 ## controls intertwine animations, giving a smoother effect.
 @export_range(-0.01, 1.0, 0.01) var delay := -0.01
 
-## Transition curve of the animations. Same as [code]Tween.TransitionType[/code].
+## Transition curve of enter animations. Same as [code]Tween.TransitionType[/code].
 @export_enum(
 	"Default",
 	"LINEAR",
@@ -253,16 +253,41 @@ const DEBUG := false
 	"CIRC",
 	"BOUNCE",
 	"BACK"
-) var transition_type := "Default"
+) var transition_enter := "Default"
 
-## Ease curve of the animations. Same as [code]Tween.EaseType[/code].
+## Transition curve of leave animations. Same as [code]Tween.TransitionType[/code].
+@export_enum(
+	"Default",
+	"LINEAR",
+	"SINE",
+	"QUINT",
+	"QUART",
+	"QUAD",
+	"EXPO",
+	"ELASTIC",
+	"CUBIC",
+	"CIRC",
+	"BOUNCE",
+	"BACK"
+) var transition_leave := "Default"
+
+## Ease curve of enter animations. Same as [code]Tween.EaseType[/code].
 @export_enum(
 	"Default",
 	"IN",
 	"OUT",
 	"IN_OUT",
 	"OUT_IN"
-) var ease_type := "Default"
+) var ease_enter := "Default"
+
+## Ease curve of leave animations. Same as [code]Tween.EaseType[/code].
+@export_enum(
+	"Default",
+	"IN",
+	"OUT",
+	"IN_OUT",
+	"OUT_IN"
+) var ease_leave := "Default"
 
 @export_group("Target")
 
@@ -289,11 +314,17 @@ const DEBUG := false
 @export var center_pivot: ExportBool = ExportBool.DEFAULT
 
 # Private variables
-## Parsed transition enum value.
-var _transition := Tween.TRANS_QUAD
+## Parsed enter transition enum value.
+var _transition_enter := Tween.TRANS_QUAD
 
-## Parsed ease enum value.
-var _ease := Tween.EASE_IN_OUT
+## Parsed leave transition enum value.
+var _transition_leave := Tween.TRANS_QUAD
+
+## Parsed enter ease enum value.
+var _ease_enter := Tween.EASE_IN_OUT
+
+## Parsed leave ease enum value.
+var _ease_leave := Tween.EASE_IN_OUT
 
 ## Array of NodeInfo of all controls affected by transition.
 var _node_infos: Array[NodeInfo] = []
@@ -325,8 +356,10 @@ func _ready() -> void:
 	_get_custom_settings()
 	var temp_tween := create_tween()
 	temp_tween.tween_interval(0.1)
-	_transition = temp_tween.get("TRANS_" + transition_type)
-	_ease = temp_tween.get("EASE_" + ease_type)
+	_transition_enter = temp_tween.get("TRANS_" + transition_enter)
+	_transition_leave = temp_tween.get("TRANS_" + transition_leave)
+	_ease_enter = temp_tween.get("EASE_" + ease_enter)
+	_ease_leave = temp_tween.get("EASE_" + ease_leave)
 
 	if _transition_valid():
 		if not layout_id:
@@ -381,7 +414,7 @@ func _exit_tree() -> void:
 ## Get custom settings from project settings and apply to current instance.
 func _get_custom_settings() -> void:
 	var exported_bools := ["auto_start", "fade_layout", "center_pivot"]
-	var exported_strings := ["transition_type", "ease_type"]
+	var exported_strings := ["transition_enter", "transition_leave", "ease_enter", "ease_leave"]
 	var exported_anims := ["animation_enter", "animation_leave"]
 	var exported_floats := ["duration", "delay"]
 
@@ -590,8 +623,8 @@ func _slide_in(node_info: NodeInfo):
 		node_info.reset_anchors("v" if animation_enter in [Anim.SLIDE_LEFT, Anim.SLIDE_RIGHT] else "h")
 
 		node_info.tween\
-			.set_trans(_transition)\
-			.set_ease(_ease)\
+			.set_trans(_transition_enter)\
+			.set_ease(_ease_enter)\
 			.tween_property(
 				node_info.node,
 				anchor_x, 0.0,
@@ -599,8 +632,8 @@ func _slide_in(node_info: NodeInfo):
 			)
 		node_info.tween\
 			.parallel()\
-			.set_trans(_transition)\
-			.set_ease(_ease)\
+			.set_trans(_transition_enter)\
+			.set_ease(_ease_enter)\
 			.tween_property(
 				node_info.node,
 				anchor_y, 1.0,
@@ -608,8 +641,8 @@ func _slide_in(node_info: NodeInfo):
 			)
 	else:
 		node_info.tween\
-			.set_trans(_transition)\
-			.set_ease(_ease)\
+			.set_trans(_transition_enter)\
+			.set_ease(_ease_enter)\
 			.tween_method(
 				node_info.set_position,
 				node_info.get_target_position(animation_enter),
@@ -642,8 +675,8 @@ func _slide_out(node_info: NodeInfo):
 		node_info.reset_anchors("both")
 
 		node_info.tween\
-			.set_trans(_transition)\
-			.set_ease(_ease)\
+			.set_trans(_transition_leave)\
+			.set_ease(_ease_leave)\
 			.tween_property(
 				node_info.node,
 				anchor_x, target_anchor.x,
@@ -651,8 +684,8 @@ func _slide_out(node_info: NodeInfo):
 			)
 		node_info.tween\
 			.parallel()\
-			.set_trans(_transition)\
-			.set_ease(_ease)\
+			.set_trans(_transition_leave)\
+			.set_ease(_ease_leave)\
 				.tween_property(
 				node_info.node,
 				anchor_y, target_anchor.y,
@@ -660,8 +693,8 @@ func _slide_out(node_info: NodeInfo):
 			)
 	else:
 		node_info.tween\
-			.set_trans(_transition)\
-			.set_ease(_ease)\
+			.set_trans(_transition_leave)\
+			.set_ease(_ease_leave)\
 			.tween_method(
 				node_info.set_position,
 				node_info.initial_position,
@@ -690,8 +723,8 @@ func _fade_in(node_info: NodeInfo):
 		node_info.tween.tween_interval(node_info.delay)
 
 	node_info.tween\
-		.set_trans(_transition)\
-		.set_ease(_ease)\
+		.set_trans(_transition_enter)\
+		.set_ease(_ease_enter)\
 		.tween_property(node_info.node, "modulate:a", 1.0, node_info.duration)
 
 	node_info.unset_clickable()
@@ -712,8 +745,8 @@ func _fade_out(node_info: NodeInfo):
 		node_info.tween.tween_interval(node_info.delay)
 
 	node_info.tween\
-		.set_trans(_transition)\
-		.set_ease(_ease)\
+		.set_trans(_transition_leave)\
+		.set_ease(_ease_leave)\
 		.tween_property(node_info.node, "modulate:a", 0.0, node_info.duration)
 
 	node_info.unset_clickable()
@@ -737,8 +770,8 @@ func _scale_in(node_info: NodeInfo):
 		node_info.tween.tween_interval(node_info.delay)
 
 	node_info.tween\
-		.set_trans(_transition)\
-		.set_ease(_ease)\
+		.set_trans(_transition_enter)\
+		.set_ease(_ease_enter)\
 		.tween_property(node_info.node, "scale", node_info.initial_scale, node_info.duration)
 
 	node_info.unset_clickable()
@@ -763,8 +796,8 @@ func _scale_out(node_info: NodeInfo):
 		node_info.tween.tween_interval(node_info.delay)
 
 	node_info.tween\
-		.set_trans(_transition)\
-		.set_ease(_ease)\
+		.set_trans(_transition_leave)\
+		.set_ease(_ease_leave)\
 		.tween_property(node_info.node, "scale", node_info.get_target_scale(animation_leave), node_info.duration)
 
 	node_info.unset_clickable()

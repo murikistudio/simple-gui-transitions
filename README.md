@@ -180,11 +180,17 @@ The order will be taken in account to apply the animation `Delay`.
 #### Center Pivot
 When `Animation Enter` or `Animation Leave` is one of the scale animations, it will center the control's `pivot_offset` property.
 
-#### Transition Type
-Transition curve of the animations. Same as `Tween.TransitionType`.
+#### Transition Enter
+Transition curve of enter animations. Same as `Tween.TransitionType`.
 
-#### Ease Type
-Ease curve of the animations. Same as `Tween.EaseType`.
+#### Transition Leave
+Transition curve of leave animations. Same as `Tween.TransitionType`.
+
+#### Ease Enter
+Ease curve of enter animations. Same as `Tween.EaseType`.
+
+#### Ease Leave
+Ease curve of leave animations. Same as `Tween.EaseType`.
 
 ## Singleton `GuiTransitions`
 The singleton `GuiTransitions` allows to trigger the transitions globally and swap GUI layouts.

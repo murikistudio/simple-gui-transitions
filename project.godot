@@ -43,10 +43,12 @@ config/default/fade_layout=true
 config/default/center_pivot=true
 config/default/duration=0.5
 config/default/delay=0.5
-config/default/transition_type="QUAD"
-config/default/ease_type="IN_OUT"
 config/default/animation_enter=4
 config/default/animation_leave=4
+config/default/transition_enter="QUAD"
+config/default/transition_leave="QUAD"
+config/default/ease_enter="IN_OUT"
+config/default/ease_leave="IN_OUT"
 
 [physics]
 
