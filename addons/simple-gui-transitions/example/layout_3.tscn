@@ -19,7 +19,7 @@ script = ExtResource("3")
 animation_enter = 7
 animation_leave = 6
 layout = NodePath("..")
-group = NodePath("../VBoxContainer2")
+controls = Array[NodePath]([NodePath("../VBoxContainer2/Label"), NodePath("../VBoxContainer2/HBoxContainer"), NodePath("../VBoxContainer2/MarginContainer"), NodePath("../VBoxContainer2/MarginContainer2")])
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="." unique_id=718837529]
 layout_mode = 0

@@ -223,8 +223,7 @@ const DEBUG := false
 ## transition use the default value set in Project Settings.
 @export_range(-0.01, 2.0, 0.01) var duration := -0.01
 
-## Delay ratio between transitions for each node contained
-## in [code]Group[/code] or [code]Controls[/code].
+## Delay ratio between transitions for each node contained in [code]Controls[/code].
 ## The default value is [code]0.5[/code].[br][br]
 ##
 ## - A negative value such as the default [code]-0.01[/code] will make the
@@ -269,7 +268,7 @@ const DEBUG := false
 
 ## The main layout node. It will be hidden and shown accordingly.
 ## Should be the topmost node of the current layout.
-## If your don't set [code]Controls[/code] or [code]Group[/code],
+## If your don't set [code]Controls[/code],
 ## the [code]Layout[/code] itself will be animated.
 ## [b][color=red]Required![/color][/b]
 @export var layout: NodePath
@@ -281,15 +280,8 @@ const DEBUG := false
 
 ## Array of individual nodes to be animated.
 ## The order will be taken in account to apply the animation [code]Delay[/code].
-## [b]If empty, a [code]Group[/code] must be set[/b].
+## [b]If empty, the [code]Layout[/code] itself will be animated[/b].
 @export var controls: Array[NodePath] = []
-
-## A node with children controls to be animated in sequence.
-## The order will be taken in account to apply the animation [code]Delay[/code].
-## Example: a [code]HBoxContainer[/code] or [code]VBoxContainer[/code] with
-## several buttons as children will allow to animate all buttons one by one.
-## [b]If not set, [code]Controls[/code] must be selected.[/b]
-@export var group: NodePath
 
 ## When [code]Animation[/code] Enter or [code]Animation Leave[/code]
 ## is one of the scale animations, it will center the control's
@@ -315,14 +307,11 @@ var _is_shown := false
 ## Parsed transition status enum value.
 var _status: int = Status.OK
 
-## If apply transitions only to layout (no group or controls set).
+## If apply transitions only to layout (no controls set).
 var _layout_only := false
 
 ## Main control affected by this transition.
 @onready var _layout: Control = get_node(layout) if layout else null
-
-## Control containing child controls affected by this transition.
-@onready var _group: Control = get_node(group) if group else null
 
 ## Tweener used by this transition to perform animations.
 @onready var _tween: Tween
@@ -814,7 +803,7 @@ func _fade_in_node(node_info: NodeInfo) -> void:
 	tween.tween_property(node_info.node, "modulate:a", 1.0, node_duration)
 
 
-## Get nodes from group or array of node paths set by the user.
+## Get nodes from array of node paths set by the user.
 func _get_nodes_from_containers() -> Array[Control]:
 	_controls.clear()
 
@@ -824,10 +813,8 @@ func _get_nodes_from_containers() -> Array[Control]:
 		if node:
 			_controls.push_back(node)
 
-	var nodes: Array = _controls if _controls.size() \
-		else _group.get_children() if _group \
-		else [_layout]
-	_layout_only = _layout and not _controls.size() and not _group
+	var nodes: Array = _controls if _controls.size() else [_layout]
+	_layout_only = _layout and not _controls.size()
 	var filtered_nodes: Array[Control] = []
 
 	for n in nodes:
@@ -839,12 +826,12 @@ func _get_nodes_from_containers() -> Array[Control]:
 	return filtered_nodes
 
 
-## Get children nodes from group children or controls array.
+## Get children nodes from controls array.
 func _get_node_infos() -> void:
 	var filtered_nodes := _get_nodes_from_containers()
 
 	if not filtered_nodes.size():
-		push_warning("No valid group children or controls set on GuiTransition: %s" % self.get_path())
+		push_warning("No valid controls set on GuiTransition: %s" % self.get_path())
 
 	var base_duration := duration / filtered_nodes.size()
 	var inv_delay := 1.0 - delay

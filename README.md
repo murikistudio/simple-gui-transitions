@@ -39,12 +39,10 @@ See the properties in the next section to learn how to configure it properly, bu
 
 - `Layout`: The main layout node. It will be hidden and shown accordingly. Should be the topmost node of the current GUI layout, usually the scene root. If you don't set the `Layout ID` property, this node's name will be assumed as the layout ID. **Always required!**
 - `Controls`: An array of nodes that will be animated in sequence.
-- `Group`: A node with children controls to be animated in sequence.
 
 **Notes:**
-- If you don't set both `Controls` and `Group`, the `Layout` itself will be animated.
+- If you don't set both `Controls`, the `Layout` itself will be animated.
 In this case, the `Delay` property will not be used.
-- If you set both `Controls` and `Group`, only `Controls` will be animated and `Group` will be ignored.
 
 ### Triggering Transitions
 After setting up its properties, the layout should at least be shown with a transition at startup.
@@ -61,7 +59,7 @@ add different transitions to specific parts of the interface, for example,
 the health and mana bars in the top of the screen would slide upwards and the
 equipment list in the bottom would slide downwards. In that example, you would
 have two `GuiTransition` nodes in the scene with the same `Layout ID` (`Hud`) and
-different `Controls`/`Group` and `Animation Enter`/`Animation Leave` properties.
+different `Controls` and `Animation Enter`/`Animation Leave` properties.
 This way, you can have different transitions for each part of the interface and
 trigger all parts with a single command.
 
@@ -92,7 +90,7 @@ func _on_button_pause_pressed() -> void:
 Another common operation is to not allow controls to be interacted when the
 layout is transitioning. The plugin actually do not allow buttons and other
 interactable nodes to be interacted during the transition, but only if the nodes
-affected by the transition (the `Controls` or `Group`) are interactable, that is:
+affected by the transition (the `Controls` property) are interactable, that is:
 buttons and other interactable nodes. In the case you the transition is affecting
 an container or any other node that is not interactable, the interaction will not
 be blocked. In such cases, you may check if a transition is currently in progress
@@ -113,7 +111,7 @@ Check the detailed documentation below to learn more.
 
 ### Known Limitations
 - No support for changing properties at runtime. This means that you can't
-add controls to `Controls` and `Group` at runtime, and changing other properties
+add controls to `Controls` at runtime, and changing other properties
 will have unknown side effects.
 Maybe the support for this will be added in the future,
 but this plugin was designed for static menus and interfaces, after all.
@@ -158,7 +156,7 @@ The animation type of the controls when leaving the screen. The available animat
 The total animation duration in seconds. A negative value such as the default `-0.01` will make the transition use the default value set in `Project Settings`.
 
 #### Delay
-Delay ratio between transitions for each node contained in `Group` or `Controls`.
+Delay ratio between transitions for each node contained in `Controls`.
 The default value is `0.5`.
 
 - A negative value such as the default `-0.01` will make the transition use the default value set in `Project Settings`.
@@ -173,16 +171,11 @@ Optional ID of layout to trigger changes on the singleton `GuiTransitions` (at m
 If empty, will be assumed as the `Layout` node name.
 
 #### Layout
-**Required!** The main layout node. It will be hidden and shown accordingly. Should be the topmost node of the current layout. If your don't set `Controls` or `Group`, the `Layout` itself will be animated.
+**Required!** The main layout node. It will be hidden and shown accordingly. Should be the topmost node of the current layout. If your don't set `Controls`, the `Layout` itself will be animated.
 
 #### Controls
 Array of individual nodes to be animated.
 The order will be taken in account to apply the animation `Delay`.
-
-#### Group
-A node with children controls to be animated in sequence.
-The order will be taken in account to apply the animation `Delay`.
-Example: a `HBoxContainer` or `VBoxContainer` with several buttons as children will allow to animate all buttons one by one.
 
 #### Center Pivot
 When `Animation Enter` or `Animation Leave` is one of the scale animations, it will center the control's `pivot_offset` property.
