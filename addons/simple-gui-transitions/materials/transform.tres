@@ -1,9 +1,0 @@
-[gd_resource type="ShaderMaterial" format=3 uid="uid://dsr3b1c33apxb"]
-
-[ext_resource type="Shader" uid="uid://kdri0ilub23x" path="res://addons/simple-gui-transitions/shaders/transform.gdshader" id="1"]
-
-[resource]
-resource_local_to_scene = true
-shader = ExtResource("1")
-shader_parameter/slide = Vector2(0, 0)
-shader_parameter/scale = Vector2(1, 1)
