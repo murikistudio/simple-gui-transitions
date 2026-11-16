@@ -19,6 +19,7 @@ script = ExtResource("2")
 animation_enter = 6
 animation_leave = 7
 layout = NodePath("..")
+controls = Array[NodePath]([NodePath("../HBoxContainer/VBoxContainer/Label"), NodePath("../HBoxContainer/VBoxContainer/ButtonUpdate"), NodePath("../HBoxContainer/VBoxContainer/ButtonHide"), NodePath("../HBoxContainer/VBoxContainer/ButtonGoTo")])
 
 [node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1044089078]
 layout_mode = 0

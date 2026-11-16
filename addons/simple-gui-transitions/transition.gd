@@ -47,7 +47,6 @@ const DefaultValues := preload("res://addons/simple-gui-transitions/default_valu
 class NodeInfo extends RefCounted:
 	var node: Control
 	var name: String
-	var initial_mouse_filter: int
 	var delay: float
 	var duration: float
 	var center_pivot: bool
@@ -57,20 +56,16 @@ class NodeInfo extends RefCounted:
 		_node: Control,
 		_delay: float,
 		_duration: float,
-		_auto_start: bool,
-		_center_pivot: bool
+		_center_pivot: bool,
 	) -> void:
 		node = _node
 		name = node.name
-		initial_mouse_filter = node.mouse_filter
 		delay = _delay
 		duration = _duration
 		center_pivot = _center_pivot
 
-		if _auto_start:
-			node.modulate.a = 0.0
-
 		set_pivot_to_center()
+		node.offset_transform_visual_only = false
 
 	# Invalidates existing tween and creates a new one.
 	func init_tween() -> void:
@@ -81,18 +76,6 @@ class NodeInfo extends RefCounted:
 			tween.kill()
 
 		tween = node.create_tween()
-
-	# Set node to unclickable while in transition.
-	func unset_clickable():
-		if not is_instance_valid(node):
-			return
-		node.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	# Revert initial node clickable value after transition.
-	func revert_clickable():
-		if not is_instance_valid(node):
-			return
-		node.mouse_filter = initial_mouse_filter
 
 	# Get the zero scale of node according to the animation type.
 	func get_target_scale(animation: int) -> Vector2:
@@ -292,6 +275,10 @@ var _layout_only := false
 ## Main control affected by this transition.
 @onready var _layout: Control = get_node(layout) if layout else null
 
+## Cache initial layout mouse behavior recursive.
+@onready var _initial_mouse_behavior_recursive: Control.MouseBehaviorRecursive = _layout.mouse_behavior_recursive \
+	if _layout else Control.MouseBehaviorRecursive.MOUSE_BEHAVIOR_INHERITED
+
 ## Tweener used by this transition to perform animations.
 @onready var _tween: Tween
 
@@ -319,6 +306,9 @@ func _ready() -> void:
 		GuiTransitions._layouts[layout_id].push_back(self)
 
 		_get_node_infos()
+
+		if auto_start:
+			_apply_auto_start_hidden_state()
 
 		if fade_layout:
 			_layout.modulate.a = 0.0
@@ -476,15 +466,16 @@ func _update(function = null):
 ## Handles the singleton show calls.
 func _show(id := ""):
 	if _transition_valid() and (not id or id == layout_id) and _status == Status.OK:
+		_get_node_infos()
+
 		_layout.visible = true
+		_layout.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_DISABLED
 		_status = Status.SHOWING
 
 		_init_tween()
 		_fade_in_layout()
 
-		for _node_info in _node_infos:
-			var node_info: NodeInfo = _node_info
-
+		for node_info in _node_infos:
 			if animation_enter == Anim.FADE:
 				_fade_in(node_info)
 			elif animation_enter in [Anim.SCALE, Anim.SCALE_HORIZONTAL, Anim.SCALE_VERTICAL]:
@@ -498,6 +489,8 @@ func _show(id := ""):
 		if _tween and _tween.is_valid():
 			await _tween.finished
 
+		_layout.mouse_behavior_recursive = _initial_mouse_behavior_recursive
+
 		_is_shown = true
 		_status = Status.OK
 
@@ -509,7 +502,10 @@ func _show(id := ""):
 ## Handles the singleton hide calls.
 func _hide(id := "", function = null):
 	if _transition_valid() and _layout.visible and (not id or id == layout_id) and _status == Status.OK:
+		_get_node_infos()
+
 		_status = Status.HIDING
+		_layout.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_DISABLED
 
 		_init_tween()
 		_fade_out_layout()
@@ -527,6 +523,8 @@ func _hide(id := "", function = null):
 
 		if _tween and _tween.is_valid():
 			await _tween.finished
+
+		_layout.mouse_behavior_recursive = _initial_mouse_behavior_recursive
 
 		if typeof(function) == TYPE_CALLABLE:
 			(function as Callable).call()
@@ -576,11 +574,6 @@ func _slide_in(node_info: NodeInfo):
 		)\
 		.from(start_position)
 
-	node_info.unset_clickable()
-	if node_info.tween and node_info.tween.is_valid():
-		await node_info.tween.finished
-	node_info.revert_clickable()
-
 
 ## Performs the slide out transition.
 func _slide_out(node_info: NodeInfo):
@@ -603,7 +596,6 @@ func _slide_out(node_info: NodeInfo):
 			node_info.duration
 		)
 
-	node_info.unset_clickable()
 	if node_info.tween and node_info.tween.is_valid():
 		await node_info.tween.finished
 	if is_instance_valid(node_info.node):
@@ -627,11 +619,6 @@ func _fade_in(node_info: NodeInfo):
 		.set_ease(_ease_enter)\
 		.tween_property(node_info.node, ^"modulate:a", 1.0, node_info.duration)
 
-	node_info.unset_clickable()
-	if node_info.tween and node_info.tween.is_valid():
-		await node_info.tween.finished
-	node_info.revert_clickable()
-
 
 ## Performs the fade out transition.
 func _fade_out(node_info: NodeInfo):
@@ -647,8 +634,6 @@ func _fade_out(node_info: NodeInfo):
 		.set_trans(_transition_leave)\
 		.set_ease(_ease_leave)\
 		.tween_property(node_info.node, ^"modulate:a", 0.0, node_info.duration)
-
-	node_info.unset_clickable()
 
 
 ## Performs the scale in transition.
@@ -670,12 +655,6 @@ func _scale_in(node_info: NodeInfo):
 		.set_trans(_transition_enter)\
 		.set_ease(_ease_enter)\
 		.tween_property(node_info.node, ^"offset_transform_scale", Vector2.ONE, node_info.duration)
-
-	node_info.unset_clickable()
-
-	if node_info.tween and node_info.tween.is_valid():
-		await node_info.tween.finished
-	node_info.revert_clickable()
 
 
 ## Performs the scale out transition.
@@ -699,7 +678,6 @@ func _scale_out(node_info: NodeInfo):
 			node_info.duration
 		)
 
-	node_info.unset_clickable()
 	if node_info.tween and node_info.tween.is_valid():
 		await node_info.tween.finished
 	if is_instance_valid(node_info.node):
@@ -795,9 +773,17 @@ func _get_node_infos() -> void:
 			node,
 			current_delay,
 			current_duration,
-			auto_start,
 			center_pivot
 		))
+
+
+## Applies the invisible initial state to the controls when auto_start is active.
+func _apply_auto_start_hidden_state() -> void:
+	for _node_info in _node_infos:
+		var node_info: NodeInfo = _node_info
+
+		if is_instance_valid(node_info.node):
+			node_info.node.modulate.a = 0.0
 
 
 # Helper methods
