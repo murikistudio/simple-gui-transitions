@@ -1,6 +1,6 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://dsr3b1c33apxb"]
+[gd_resource type="ShaderMaterial" format=3 uid="uid://dsr3b1c33apxb"]
 
-[ext_resource type="Shader" path="res://addons/simple-gui-transitions/shaders/transform.gdshader" id="1"]
+[ext_resource type="Shader" uid="uid://kdri0ilub23x" path="res://addons/simple-gui-transitions/shaders/transform.gdshader" id="1"]
 
 [resource]
 resource_local_to_scene = true

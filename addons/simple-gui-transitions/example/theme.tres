@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=8 format=3 uid="uid://cxbdqv0cxcy1m"]
+[gd_resource type="Theme" format=3 uid="uid://cxbdqv0cxcy1m"]
 
 [ext_resource type="FontFile" uid="uid://ct0m40v1h6h20" path="res://addons/simple-gui-transitions/example/stanberry.ttf" id="1"]
 

@@ -1,10 +1,10 @@
-[gd_scene load_steps=4 format=3 uid="uid://dlidtkkqbimv1"]
+[gd_scene format=3 uid="uid://dlidtkkqbimv1"]
 
 [ext_resource type="Script" uid="uid://cxmh57eim4djo" path="res://addons/simple-gui-transitions/example/layout_2.gd" id="1"]
 [ext_resource type="Script" uid="uid://bimelmc1ce1b2" path="res://addons/simple-gui-transitions/transition.gd" id="2"]
 [ext_resource type="Theme" uid="uid://cxbdqv0cxcy1m" path="res://addons/simple-gui-transitions/example/theme.tres" id="3"]
 
-[node name="Layout2" type="Control"]
+[node name="Layout2" type="Control" unique_id=509564536]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -14,36 +14,36 @@ grow_vertical = 2
 theme = ExtResource("3")
 script = ExtResource("1")
 
-[node name="GuiTransition" type="Node" parent="."]
+[node name="GuiTransition" type="Node" parent="." unique_id=552757183]
 script = ExtResource("2")
 animation_enter = 6
 animation_leave = 7
 layout = NodePath("..")
 group = NodePath("../HBoxContainer/VBoxContainer")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1044089078]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Control2" type="Control" parent="HBoxContainer"]
+[node name="Control2" type="Control" parent="HBoxContainer" unique_id=130691152]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer" unique_id=291910751]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Control3" type="Control" parent="HBoxContainer/VBoxContainer"]
+[node name="Control3" type="Control" parent="HBoxContainer/VBoxContainer" unique_id=1293024635]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Label" type="Label" parent="HBoxContainer/VBoxContainer"]
+[node name="Label" type="Label" parent="HBoxContainer/VBoxContainer" unique_id=157197006]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -51,33 +51,33 @@ text = "Layout 2"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ButtonUpdate" type="Button" parent="HBoxContainer/VBoxContainer"]
+[node name="ButtonUpdate" type="Button" parent="HBoxContainer/VBoxContainer" unique_id=1540968734]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 focus_mode = 0
 text = "Update layout 2"
 
-[node name="ButtonHide" type="Button" parent="HBoxContainer/VBoxContainer"]
+[node name="ButtonHide" type="Button" parent="HBoxContainer/VBoxContainer" unique_id=1643404292]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 focus_mode = 0
 text = "Hide layout 2"
 
-[node name="ButtonGoTo" type="Button" parent="HBoxContainer/VBoxContainer"]
+[node name="ButtonGoTo" type="Button" parent="HBoxContainer/VBoxContainer" unique_id=1583307805]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 focus_mode = 0
 text = "Go to layout 3"
 
-[node name="Control4" type="Control" parent="HBoxContainer/VBoxContainer"]
+[node name="Control4" type="Control" parent="HBoxContainer/VBoxContainer" unique_id=1266935204]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Control" type="Control" parent="HBoxContainer"]
+[node name="Control" type="Control" parent="HBoxContainer" unique_id=1098372301]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3

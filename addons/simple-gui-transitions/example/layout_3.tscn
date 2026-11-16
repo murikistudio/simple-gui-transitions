@@ -1,10 +1,10 @@
-[gd_scene load_steps=4 format=3 uid="uid://cdba1niudigw2"]
+[gd_scene format=3 uid="uid://cdba1niudigw2"]
 
 [ext_resource type="Script" uid="uid://bwedagipx1cfm" path="res://addons/simple-gui-transitions/example/layout_3.gd" id="1"]
 [ext_resource type="Theme" uid="uid://cxbdqv0cxcy1m" path="res://addons/simple-gui-transitions/example/theme.tres" id="2"]
 [ext_resource type="Script" uid="uid://bimelmc1ce1b2" path="res://addons/simple-gui-transitions/transition.gd" id="3"]
 
-[node name="Layout3" type="Control"]
+[node name="Layout3" type="Control" unique_id=447548523]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -14,19 +14,19 @@ grow_vertical = 2
 theme = ExtResource("2")
 script = ExtResource("1")
 
-[node name="GuiTransition" type="Node" parent="."]
+[node name="GuiTransition" type="Node" parent="." unique_id=777683519]
 script = ExtResource("3")
 animation_enter = 7
 animation_leave = 6
 layout = NodePath("..")
 group = NodePath("../VBoxContainer2")
 
-[node name="VBoxContainer2" type="VBoxContainer" parent="."]
+[node name="VBoxContainer2" type="VBoxContainer" parent="." unique_id=718837529]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 
-[node name="Label" type="Label" parent="VBoxContainer2"]
+[node name="Label" type="Label" parent="VBoxContainer2" unique_id=1346761646]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -35,13 +35,13 @@ text = "Delay Algorithm Test"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer2"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer2" unique_id=1141301122]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.2
 
-[node name="LabelDelay" type="Label" parent="VBoxContainer2/HBoxContainer"]
+[node name="LabelDelay" type="Label" parent="VBoxContainer2/HBoxContainer" unique_id=1922118924]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 size_flags_vertical = 1
@@ -50,14 +50,14 @@ horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true
 
-[node name="SliderDelay" type="HSlider" parent="VBoxContainer2/HBoxContainer"]
+[node name="SliderDelay" type="HSlider" parent="VBoxContainer2/HBoxContainer" unique_id=1816627304]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 size_flags_vertical = 1
 max_value = 1.0
 step = 0.01
 
-[node name="LabelDuration" type="Label" parent="VBoxContainer2/HBoxContainer"]
+[node name="LabelDuration" type="Label" parent="VBoxContainer2/HBoxContainer" unique_id=1280493109]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 size_flags_vertical = 1
@@ -66,7 +66,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true
 
-[node name="SliderDuration" type="HSlider" parent="VBoxContainer2/HBoxContainer"]
+[node name="SliderDuration" type="HSlider" parent="VBoxContainer2/HBoxContainer" unique_id=1621923011]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 size_flags_vertical = 1
@@ -75,7 +75,7 @@ max_value = 2.0
 step = 0.01
 value = 0.1
 
-[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer2"]
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer2" unique_id=1285096376]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -84,12 +84,12 @@ theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
-[node name="ContainerControls" type="VBoxContainer" parent="VBoxContainer2/MarginContainer"]
+[node name="ContainerControls" type="VBoxContainer" parent="VBoxContainer2/MarginContainer" unique_id=1511033419]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="MarginContainer2" type="MarginContainer" parent="VBoxContainer2"]
+[node name="MarginContainer2" type="MarginContainer" parent="VBoxContainer2" unique_id=1453067896]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -99,17 +99,17 @@ theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer2/MarginContainer2"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer2/MarginContainer2" unique_id=786544351]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="TextEditOutput" type="TextEdit" parent="VBoxContainer2/MarginContainer2/HBoxContainer"]
+[node name="TextEditOutput" type="TextEdit" parent="VBoxContainer2/MarginContainer2/HBoxContainer" unique_id=1380658479]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="ButtonGoTo" type="Button" parent="VBoxContainer2/MarginContainer2/HBoxContainer"]
+[node name="ButtonGoTo" type="Button" parent="VBoxContainer2/MarginContainer2/HBoxContainer" unique_id=1039425496]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
