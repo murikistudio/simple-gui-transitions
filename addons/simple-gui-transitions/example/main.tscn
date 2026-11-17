@@ -3,7 +3,6 @@
 [ext_resource type="PackedScene" uid="uid://drn0is2i67xvx" path="res://addons/simple-gui-transitions/example/layout_1.tscn" id="1"]
 [ext_resource type="PackedScene" uid="uid://dlidtkkqbimv1" path="res://addons/simple-gui-transitions/example/layout_2.tscn" id="2"]
 [ext_resource type="Script" uid="uid://clsegifd2kjxr" path="res://addons/simple-gui-transitions/example/main.gd" id="3"]
-[ext_resource type="Theme" uid="uid://cxbdqv0cxcy1m" path="res://addons/simple-gui-transitions/example/theme.tres" id="4"]
 [ext_resource type="PackedScene" uid="uid://cdba1niudigw2" path="res://addons/simple-gui-transitions/example/layout_3.tscn" id="5"]
 
 [node name="Main" type="Control" unique_id=1972848069]
@@ -13,7 +12,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("4")
 script = ExtResource("3")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1023378822]

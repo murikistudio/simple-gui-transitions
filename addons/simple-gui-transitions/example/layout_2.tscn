@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://cxmh57eim4djo" path="res://addons/simple-gui-transitions/example/layout_2.gd" id="1"]
 [ext_resource type="Script" uid="uid://bimelmc1ce1b2" path="res://addons/simple-gui-transitions/transition.gd" id="2"]
-[ext_resource type="Theme" uid="uid://cxbdqv0cxcy1m" path="res://addons/simple-gui-transitions/example/theme.tres" id="3"]
 
 [node name="Layout2" type="Control" unique_id=509564536]
 layout_mode = 3
@@ -11,7 +10,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("3")
 script = ExtResource("1")
 
 [node name="GuiTransition" type="Node" parent="." unique_id=552757183]
