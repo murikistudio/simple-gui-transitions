@@ -71,6 +71,10 @@ class NodeInfo extends RefCounted:
 		set_pivot_to_center()
 		node.offset_transform_visual_only = false
 
+		reset_scale()
+		reset_rotation()
+		set_position(Vector2.ZERO)
+
 	# Invalidates existing tween and creates a new one.
 	func init_tween() -> void:
 		if not is_instance_valid(node):
