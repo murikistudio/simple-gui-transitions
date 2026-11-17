@@ -198,28 +198,28 @@ Ease curve of leave animations. Same as `Tween.EaseType`.
 The singleton `GuiTransitions` allows to trigger the transitions globally and swap GUI layouts.
 
 ### Signals
-#### show_started
+#### show_started(layout_name: StringName)
 Emitted when a layout is about to be shown.
 
-#### show_completed
+#### show_completed(layout_name: StringName)
 Emitted after a layout has been shown.
 
-#### hide_started
+#### hide_started(layout_name: StringName)
 Emited when a layout is about to be hidden.
 
-#### hide_completed
+#### hide_completed(layout_name: StringName)
 Emitted after a layout has been hidden.
 
-#### transition_started
+#### transition_started(layout_name: StringName)
 Emmited when a layout is about to be shown or hidden.
 
-#### transition_completed
+#### transition_completed(layout_name: StringName)
 Emited after a layout has been shown or hidden.
 
 ### Public Methods
 **Note**: Optional arguments in the methods below are suffixed with `?` (e.g. `function?`).
 
-#### go_to(id: String, function?: Callable)
+#### go_to(id: StringName, function?: Callable)
 The method `go_to` hides the current layout and shows the layout with the given `id`.
 If `function` (optional) is passed in, the `function` will be executed halfway through.
 Both signals `hide_completed` and `show_completed` are emitted accordingly.
@@ -229,19 +229,19 @@ The method `update` hides and shows the current layout.
 If `function` (optional) is passed in, the `function` will be executed halfway through.
 Both signals `hide_completed` and `show_completed` are emited accordingly.
 
-#### show(id?: String)
+#### show(id?: StringName)
 The method `show` shows the layout with the given `id`, or all hidden layouts if no `id` is passed in.
 Emits the signal `show_completed` on completion.
 
-#### hide(id?: String, function?: Callable)
+#### hide(id?: StringName, function?: Callable)
 The method `hide` hides the layout with the given `id`, or all visible layouts if no `id` is passed in.
 Emits the signal `hide_completed` on completion.
 
-#### is_shown(id: String)
+#### is_shown(id: StringName)
 The method `is_shown` returns if the layout with the given `id` is currently visible.
 
-#### is_hidden(id: String)
+#### is_hidden(id: StringName)
 The method `is_hidden` returns if the layout with the given `id` is currently hidden.
 
-#### in_transition(id?: String)
+#### in_transition(id?: StringName)
 The method `in_transition` returns if any layout or one with the given `id` is currently transitioning.

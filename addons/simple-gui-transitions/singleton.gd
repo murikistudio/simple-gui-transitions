@@ -4,54 +4,54 @@ extends Node
 
 # Signals
 ## Emited when a layout is about to be shown.
-signal show_started
+signal show_started(layout_name: StringName)
 
 ## Emited after a layout has been shown.
-signal show_completed
+signal show_completed(layout_name: StringName)
 
 ## Emited when a layout is about to be hidden.
-signal hide_started
+signal hide_started(layout_name: StringName)
 
 ## Emited after a layout has been hidden.
-signal hide_completed
+signal hide_completed(layout_name: StringName)
 
 ## Emmited when a layout is about to be shown or hidden.
-signal transition_started
+signal transition_started(layout_name: StringName)
 
 ## Emited after a layout has been shown or hidden.
-signal transition_completed
+signal transition_completed(layout_name: StringName)
 
 
 # Variables
 ## GUI layout references affected by transitions.
-var _layouts := {}
+var _layouts: Dictionary[StringName, Array] = {}
 
 
 # Public methods
 ## Hide the current layout and show the layout with the given id.
-func go_to(id: String, function: Callable = _default_callable):
-	_for_each_layout("_go_to", [id, function])
+func go_to(id: StringName, function := func(): pass):
+	_for_each_layout(&"_go_to", [id, function])
 
 
 ## Hide and show the current layout.
-func update(function: Callable = _default_callable):
+func update(function := func(): pass):
 	var _function = function if function.get_object() != self else null
-	_for_each_layout("_update", [_function])
+	_for_each_layout(&"_update", [_function])
 
 
 ## Show the layout with the given id, or all hidden layouts if no id is passed in.
-func show(id := ""):
-	_for_each_layout("_show", [id])
+func show(id := &""):
+	_for_each_layout(&"_show", [id])
 
 
 ## Hide the layout with the given id, or all visible layouts if no id is passed in.
-func hide(id := "", function: Callable = _default_callable):
+func hide(id := &"", function := func(): pass):
 	var _function = function if function.get_object() != self else null
-	_for_each_layout("_hide", [id, _function])
+	_for_each_layout(&"_hide", [id, _function])
 
 
 ## Returns if layout with the given id is currently visible.
-func is_shown(id: String) -> bool:
+func is_shown(id: StringName) -> bool:
 	if not _layouts.has(id):
 		push_error("Layout with given id does not exist: " + str(id))
 		return false
@@ -64,7 +64,7 @@ func is_shown(id: String) -> bool:
 
 
 ## Returns if layout with the given id is currently hidden.
-func is_hidden(id: String) -> bool:
+func is_hidden(id: StringName) -> bool:
 	if not _layouts.has(id):
 		push_error("Layout with given id does not exist: " + str(id))
 		return true
@@ -77,7 +77,7 @@ func is_hidden(id: String) -> bool:
 
 
 ## Returns if any layout or one with the given id is currently transitioning.
-func in_transition(id := "") -> bool:
+func in_transition(id := &"") -> bool:
 	var transition_states := [1, 2]
 
 	if id.length():
@@ -100,12 +100,7 @@ func in_transition(id := "") -> bool:
 
 # Private methods
 ## Run method with arguments on each GuiTransition layout reference.
-func _for_each_layout(method: String, args := []) -> void:
+func _for_each_layout(method: StringName, args := []) -> void:
 	for layout_name in _layouts.keys():
 		for layout in _layouts[layout_name]:
 			(layout as Node).callv(method, args)
-
-
-## Placeholder method to be used as default argument.
-func _default_callable() -> void:
-	pass

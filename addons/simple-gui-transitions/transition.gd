@@ -48,7 +48,7 @@ const DefaultValues := preload("res://addons/simple-gui-transitions/default_valu
 # Inner classes
 class NodeInfo extends RefCounted:
 	var node: Control
-	var name: String
+	var name: StringName
 	var delay: float
 	var duration: float
 	var center_pivot: bool
@@ -251,7 +251,7 @@ const DEBUG := false
 ## Optional ID of layout to trigger changes on the singleton
 ## [code]GuiTransitions[/code] (at method parameters named [code]id[/code]).
 ## If empty, will be assumed as the [code]Layout[/code] node name.
-@export var layout_id := ""
+@export var layout_id := &""
 
 ## Array of individual nodes to be animated.
 ## The order will be taken in account to apply the animation [code]Delay[/code].
@@ -505,8 +505,8 @@ func _show(id := ""):
 			else:
 				_slide_in(node_info)
 
-		GuiTransitions.transition_started.emit()
-		GuiTransitions.show_started.emit()
+		GuiTransitions.transition_started.emit(layout_id)
+		GuiTransitions.show_started.emit(layout_id)
 
 		if _tween and _tween.is_valid():
 			await _tween.finished
@@ -517,8 +517,8 @@ func _show(id := ""):
 		_status = Status.OK
 
 		if GuiTransitions.is_shown(layout_id):
-			GuiTransitions.transition_completed.emit()
-			GuiTransitions.show_completed.emit()
+			GuiTransitions.transition_completed.emit(layout_id)
+			GuiTransitions.show_completed.emit(layout_id)
 
 
 ## Handles the singleton hide calls.
@@ -542,8 +542,8 @@ func _hide(id := "", function = null):
 			else:
 				_slide_out(node_info)
 
-		GuiTransitions.transition_started.emit()
-		GuiTransitions.hide_started.emit()
+		GuiTransitions.transition_started.emit(layout_id)
+		GuiTransitions.hide_started.emit(layout_id)
 
 		if _tween and _tween.is_valid():
 			await _tween.finished
@@ -558,8 +558,8 @@ func _hide(id := "", function = null):
 		_status = Status.OK
 
 		if GuiTransitions.is_hidden(layout_id):
-			GuiTransitions.transition_completed.emit()
-			GuiTransitions.hide_completed.emit()
+			GuiTransitions.transition_completed.emit(layout_id)
+			GuiTransitions.hide_completed.emit(layout_id)
 
 
 # Abstraction methods
