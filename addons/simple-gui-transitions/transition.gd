@@ -49,6 +49,8 @@ const DefaultValues := preload("res://addons/simple-gui-transitions/default_valu
 
 # Inner classes
 class NodeInfo extends RefCounted:
+	const NEAR_ZERO := Vector2.ONE * 0.001
+
 	var node: Control
 	var name: StringName
 	var delay: float
@@ -89,15 +91,15 @@ class NodeInfo extends RefCounted:
 	func get_target_scale(animation: int) -> Vector2:
 		match animation:
 			Anim.SCALE_HORIZONTAL:
-				return Vector2(0.0, 1.0)
+				return Vector2(0.001, 1.0)
 			Anim.SCALE_VERTICAL:
-				return Vector2(1.0, 0.0)
+				return Vector2(1.0, 0.001)
 			Anim.ROTATE_ZOOM_IN:
-				return Vector2.ZERO
+				return NEAR_ZERO
 			Anim.ROTATE_ZOOM_OUT:
 				return Vector2(4.0, 4.0)
 
-		return Vector2.ZERO
+		return NEAR_ZERO
 
 	# Get the target rotation of node according to the animation type.
 	func get_target_rotation(animation: int) -> float:
