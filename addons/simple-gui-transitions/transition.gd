@@ -1,3 +1,4 @@
+@tool
 @icon("res://addons/simple-gui-transitions/icon.png")
 extends Node
 ## This node is responsible for transitioning a specific layout.
@@ -152,6 +153,12 @@ const DEBUG := false
 
 # Variables
 # Public variables
+## Click to preview the enter animation with the current settings.
+@export_tool_button("Preview Enter", "ArrowRight") var preview_enter_action: Callable = _editor_preview_enter
+
+## Click to preview the leave animation with the current settings.
+@export_tool_button("Preview Leave", "ArrowLeft") var preview_leave_action: Callable = _editor_preview_leave
+
 @export_group("Transition")
 
 ## If the current layout will trigger its transition
@@ -246,7 +253,10 @@ const DEBUG := false
 ## If your don't set [code]Controls[/code],
 ## the [code]Layout[/code] itself will be animated.
 ## [b][color=red]Required![/color][/b]
-@export var layout: NodePath
+@export var layout: NodePath:
+	set(value):
+		layout = value
+		_layout = _get_layout()
 
 ## Optional ID of layout to trigger changes on the singleton
 ## [code]GuiTransitions[/code] (at method parameters named [code]id[/code]).
@@ -292,8 +302,11 @@ var _status: int = Status.OK
 ## If apply transitions only to layout (no controls set).
 var _layout_only := false
 
+## True while an editor preview animation is running. Prevents simultaneous clicks on both buttons.
+var _editor_preview_running := false
+
 ## Main control affected by this transition.
-@onready var _layout: Control = get_node(layout) if layout else null
+@onready var _layout := _get_layout()
 
 ## Cache initial layout mouse behavior recursive.
 @onready var _initial_mouse_behavior_recursive: Control.MouseBehaviorRecursive = _layout.mouse_behavior_recursive \
@@ -342,16 +355,11 @@ func _ready() -> void:
 		queue_free()
 
 
-# Invalidates existing tween and creates a new one.
-func _init_tween() -> void:
-	if _tween and _tween.is_valid():
-		_tween.kill()
-
-	_tween = create_tween()
-
-
 # Remove reference from singleton.
 func _exit_tree() -> void:
+	if Engine.is_editor_hint():
+		return
+
 	var layouts: Array = GuiTransitions._layouts.get(layout_id, [])
 
 	if not layouts:
@@ -369,6 +377,21 @@ func _exit_tree() -> void:
 
 
 # Private methods
+func _get_layout() -> Control:
+	if not layout or not is_node_ready():
+		return null
+
+	return get_node_or_null(layout)
+
+
+# Invalidates existing tween and creates a new one.
+func _init_tween() -> void:
+	if _tween and _tween.is_valid():
+		_tween.kill()
+
+	_tween = create_tween()
+
+
 ## Get custom settings from project settings and apply to current instance.
 func _get_custom_settings() -> void:
 	var exported_bools := ["auto_start", "fade_layout", "center_pivot"]
@@ -899,6 +922,117 @@ func _apply_auto_start_hidden_state() -> void:
 
 		if is_instance_valid(node_info.node):
 			node_info.node.modulate.a = 0.0
+
+
+## Tool button callback. Preview enter animation.
+func _editor_preview_enter() -> void:
+	_editor_run_preview(true)
+
+
+## Tool button callback. Preview leave animation.
+func _editor_preview_leave() -> void:
+	_editor_run_preview(false)
+
+
+## Runs an enter or leave preview within the editor and restores initial state afterwards.
+func _editor_run_preview(entering: bool) -> void:
+	if not Engine.is_editor_hint():
+		return
+	if _editor_preview_running:
+		return
+	if not _transition_valid():
+		return
+
+	_editor_preview_running = true
+
+	var snapshot := {
+		"auto_start": auto_start,
+		"fade_layout": fade_layout,
+		"transition_enter": transition_enter,
+		"transition_leave": transition_leave,
+		"ease_enter": ease_enter,
+		"ease_leave": ease_leave,
+		"duration": duration,
+		"delay": delay,
+	}
+
+	_get_custom_settings()
+
+	var temp_tween := create_tween()
+	temp_tween.tween_interval(0.01)
+	_transition_enter = temp_tween.get("TRANS_" + transition_enter)
+	_transition_leave = temp_tween.get("TRANS_" + transition_leave)
+	_ease_enter = temp_tween.get("EASE_" + ease_enter)
+	_ease_leave = temp_tween.get("EASE_" + ease_leave)
+	temp_tween.kill()
+
+	_get_node_infos()
+
+	_layout.visible = true
+	_layout.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_DISABLED
+	_status = Status.SHOWING if entering else Status.HIDING
+
+	_init_tween()
+
+	if entering:
+		_fade_in_layout()
+	else:
+		_fade_out_layout()
+
+	for node_info in _node_infos:
+		var animation := animation_enter if entering else animation_leave
+
+		if entering:
+			if animation == Anim.FADE:
+				_fade_in(node_info)
+			elif animation in [Anim.SCALE, Anim.SCALE_HORIZONTAL, Anim.SCALE_VERTICAL]:
+				_scale_in(node_info)
+			elif animation in [Anim.ROTATE_ZOOM_IN, Anim.ROTATE_ZOOM_OUT]:
+				_rotate_zoom_in(node_info)
+			else:
+				_slide_in(node_info)
+		else:
+			if animation == Anim.FADE:
+				_fade_out(node_info)
+			elif animation in [Anim.SCALE, Anim.SCALE_HORIZONTAL, Anim.SCALE_VERTICAL]:
+				_scale_out(node_info)
+			elif animation in [Anim.ROTATE_ZOOM_IN, Anim.ROTATE_ZOOM_OUT]:
+				_rotate_zoom_out(node_info)
+			else:
+				_slide_out(node_info)
+
+	if _tween and _tween.is_valid():
+		await _tween.finished
+
+	_editor_reset_preview_state()
+
+	for key in snapshot:
+		self.set(key, snapshot[key])
+
+	_status = Status.OK
+	_editor_preview_running = false
+
+
+## Resets the layout and controls back to their initial, fully visible state.
+func _editor_reset_preview_state() -> void:
+	if not is_instance_valid(_layout):
+		return
+
+	_layout.visible = true
+	_layout.modulate.a = 1.0
+	_layout.mouse_behavior_recursive = _initial_mouse_behavior_recursive
+
+	for node_info in _node_infos:
+		if not is_instance_valid(node_info.node):
+			continue
+
+		if node_info.tween and node_info.tween.is_valid():
+			node_info.tween.kill()
+
+		node_info.set_position(Vector2.ZERO)
+		node_info.reset_scale()
+		node_info.reset_rotation()
+		node_info.node.modulate.a = 1.0
 
 
 # Helper methods
