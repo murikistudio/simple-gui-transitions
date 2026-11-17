@@ -961,6 +961,7 @@ func _editor_run_preview(entering: bool) -> void:
 	var snapshot := {
 		"auto_start": auto_start,
 		"fade_layout": fade_layout,
+		"center_pivot": center_pivot,
 		"transition_enter": transition_enter,
 		"transition_leave": transition_leave,
 		"ease_enter": ease_enter,
@@ -968,6 +969,31 @@ func _editor_run_preview(entering: bool) -> void:
 		"duration": duration,
 		"delay": delay,
 	}
+
+	var layout_snapshot := {
+		"visible": _layout.visible,
+		"modulate_a": _layout.modulate.a,
+		"mouse_behavior_recursive": _layout.mouse_behavior_recursive,
+	}
+
+	var node_snapshots: Array[Dictionary] = []
+
+	for node in _get_nodes_from_containers():
+		if not is_instance_valid(node):
+			continue
+
+		node_snapshots.append({
+			"node": node,
+			"visible": node.visible,
+			"modulate_a": node.modulate.a,
+			"offset_transform_enabled": node.offset_transform_enabled,
+			"offset_transform_visual_only": node.offset_transform_visual_only,
+			"offset_transform_pivot": node.offset_transform_pivot,
+			"offset_transform_pivot_ratio": node.offset_transform_pivot_ratio,
+			"offset_transform_position": node.offset_transform_position,
+			"offset_transform_scale": node.offset_transform_scale,
+			"offset_transform_rotation": node.offset_transform_rotation,
+		})
 
 	_get_custom_settings()
 
@@ -1017,7 +1043,7 @@ func _editor_run_preview(entering: bool) -> void:
 	if _tween and _tween.is_valid():
 		await _tween.finished
 
-	_editor_reset_preview_state()
+	_editor_reset_preview_state(node_snapshots, layout_snapshot)
 
 	for key in snapshot:
 		self.set(key, snapshot[key])
@@ -1027,25 +1053,33 @@ func _editor_run_preview(entering: bool) -> void:
 
 
 ## Resets the layout and controls back to their initial, fully visible state.
-func _editor_reset_preview_state() -> void:
-	if not is_instance_valid(_layout):
-		return
-
-	_layout.visible = true
-	_layout.modulate.a = 1.0
-	_layout.mouse_behavior_recursive = _initial_mouse_behavior_recursive
+func _editor_reset_preview_state(node_snapshots: Array[Dictionary], layout_snapshot: Dictionary) -> void:
+	if is_instance_valid(_layout):
+		_layout.visible = layout_snapshot.get("visible", true)
+		_layout.modulate.a = layout_snapshot.get("modulate_a", 1.0)
+		_layout.mouse_behavior_recursive = layout_snapshot.get(
+			"mouse_behavior_recursive", _initial_mouse_behavior_recursive
+		)
 
 	for node_info in _node_infos:
-		if not is_instance_valid(node_info.node):
-			continue
-
 		if node_info.tween and node_info.tween.is_valid():
 			node_info.tween.kill()
 
-		node_info.set_position(Vector2.ZERO)
-		node_info.reset_scale()
-		node_info.reset_rotation()
-		node_info.node.modulate.a = 1.0
+	for snap in node_snapshots:
+		var node: Control = snap.get("node")
+
+		if not is_instance_valid(node):
+			continue
+
+		node.visible = snap.get("visible", true)
+		node.modulate.a = snap.get("modulate_a", 1.0)
+		node.offset_transform_enabled = snap.get("offset_transform_enabled", false)
+		node.offset_transform_visual_only = snap.get("offset_transform_visual_only", false)
+		node.offset_transform_pivot = snap.get("offset_transform_pivot", Vector2.ZERO)
+		node.offset_transform_pivot_ratio = snap.get("offset_transform_pivot_ratio", Vector2.ZERO)
+		node.offset_transform_position = snap.get("offset_transform_position", Vector2.ZERO)
+		node.offset_transform_scale = snap.get("offset_transform_scale", Vector2.ONE)
+		node.offset_transform_rotation = snap.get("offset_transform_rotation", 0.0)
 
 
 # Helper methods
