@@ -144,6 +144,7 @@ The animation type of the controls when entering the screen. The available anima
 - Fade
 - Slide left, right, up and down
 - Scale vertical, horizontal and both
+- Rotate zoom in, rotate zoom out
 
 #### Animation Leave
 The animation type of the controls when leaving the screen. The available animations are:
@@ -151,6 +152,7 @@ The animation type of the controls when leaving the screen. The available animat
 - Fade
 - Slide left, right, up and down
 - Scale vertical, horizontal and both
+- Rotate zoom in, rotate zoom out
 
 #### Duration
 The total animation duration in seconds. A negative value such as the default `-0.01` will make the transition use the default value set in `Project Settings`.

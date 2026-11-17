@@ -22,6 +22,8 @@ enum Anim {
 	SCALE = 5,  ## Scale controls based on pivot center.
 	SCALE_VERTICAL = 6,  ## Scale controls horizontally based on pivot center.
 	SCALE_HORIZONTAL = 7,  ## Scale controls vertically based on pivot center.
+	ROTATE_ZOOM_IN = 8,  ## Rotate and scale controls in, based on pivot center.
+	ROTATE_ZOOM_OUT = 9,  ## Rotate and scale controls out, based on pivot center.
 }
 
 ## Current transition status.
@@ -84,8 +86,20 @@ class NodeInfo extends RefCounted:
 				return Vector2(0.0, 1.0)
 			Anim.SCALE_VERTICAL:
 				return Vector2(1.0, 0.0)
+			Anim.ROTATE_ZOOM_IN:
+				return Vector2.ZERO
+			Anim.ROTATE_ZOOM_OUT:
+				return Vector2(4.0, 4.0)
 
 		return Vector2.ZERO
+
+	# Get the target rotation of node according to the animation type.
+	func get_target_rotation(animation: int) -> float:
+		match animation:
+			Anim.ROTATE_ZOOM_IN, Anim.ROTATE_ZOOM_OUT:
+				return deg_to_rad(-180)
+
+		return 0.0
 
 	# Get the out-of-screen offset of node according to the animation type.
 	func get_target_position(animation: int) -> Vector2:
@@ -109,6 +123,12 @@ class NodeInfo extends RefCounted:
 		if not is_instance_valid(node):
 			return
 		node.offset_transform_scale = Vector2.ONE
+
+	# Reset offset rotation to its neutral value.
+	func reset_rotation() -> void:
+		if not is_instance_valid(node):
+			return
+		node.offset_transform_rotation = 0.0
 
 	# Pivot is relative to the control size, so it doesn't need
 	# to be recalculated when the control is resized.
@@ -480,6 +500,8 @@ func _show(id := ""):
 				_fade_in(node_info)
 			elif animation_enter in [Anim.SCALE, Anim.SCALE_HORIZONTAL, Anim.SCALE_VERTICAL]:
 				_scale_in(node_info)
+			elif animation_enter in [Anim.ROTATE_ZOOM_IN, Anim.ROTATE_ZOOM_OUT]:
+				_rotate_zoom_in(node_info)
 			else:
 				_slide_in(node_info)
 
@@ -515,6 +537,8 @@ func _hide(id := "", function = null):
 				_fade_out(node_info)
 			elif animation_leave in [Anim.SCALE, Anim.SCALE_HORIZONTAL, Anim.SCALE_VERTICAL]:
 				_scale_out(node_info)
+			elif animation_leave in [Anim.ROTATE_ZOOM_IN, Anim.ROTATE_ZOOM_OUT]:
+				_rotate_zoom_out(node_info)
 			else:
 				_slide_out(node_info)
 
@@ -684,6 +708,74 @@ func _scale_out(node_info: NodeInfo):
 		node_info.node.modulate.a = 0.0
 
 
+## Performs the rotate + zoom in transition.
+func _rotate_zoom_in(node_info: NodeInfo):
+	node_info.init_tween()
+	if not node_info.tween or not node_info.tween.is_valid():
+		return
+	node_info.set_position(Vector2.ZERO)
+
+	node_info.node.modulate.a = 0.0
+	_fade_in_node(node_info)
+
+	node_info.node.offset_transform_scale = node_info.get_target_scale(animation_enter)
+	node_info.node.offset_transform_rotation = node_info.get_target_rotation(animation_enter)
+
+	if node_info.delay:
+		node_info.tween.tween_interval(node_info.delay)
+
+	node_info.tween\
+		.set_trans(_transition_enter)\
+		.set_ease(_ease_enter)\
+		.tween_property(node_info.node, ^"offset_transform_scale", Vector2.ONE, node_info.duration)
+
+	node_info.tween\
+		.set_trans(_transition_enter)\
+		.set_ease(_ease_enter)\
+		.set_parallel(true)\
+		.tween_property(node_info.node, ^"offset_transform_rotation", 0.0, node_info.duration)
+
+
+## Performs the rotate + zoom out transition.
+func _rotate_zoom_out(node_info: NodeInfo):
+	node_info.init_tween()
+	if not node_info.tween or not node_info.tween.is_valid():
+		return
+	node_info.set_position(Vector2.ZERO)
+	node_info.reset_scale()
+	node_info.reset_rotation()
+	_fade_out_node(node_info)
+
+	if node_info.delay:
+		node_info.tween.tween_interval(node_info.delay)
+
+	node_info.tween\
+		.set_trans(_transition_leave)\
+		.set_ease(_ease_leave)\
+		.tween_property(
+			node_info.node,
+			^"offset_transform_scale",
+			node_info.get_target_scale(animation_leave),
+			node_info.duration
+		)
+
+	node_info.tween\
+		.set_trans(_transition_leave)\
+		.set_ease(_ease_leave)\
+		.set_parallel(true)\
+		.tween_property(
+			node_info.node,
+			^"offset_transform_rotation",
+			node_info.get_target_rotation(animation_leave),
+			node_info.duration
+		)
+
+	if node_info.tween and node_info.tween.is_valid():
+		await node_info.tween.finished
+	if is_instance_valid(node_info.node) and not fade_layout:
+		node_info.node.modulate.a = 0.0
+
+
 ## Gradually fade in the whole layout along with individual transitions.
 func _fade_in_layout() -> void:
 	if not fade_layout or _layout_only and animation_enter == Anim.FADE:
@@ -703,14 +795,37 @@ func _fade_out_layout() -> void:
 
 
 ## Fix of node pop-in in some cases.
+## When [member fade_layout] is enabled, fades over the node's own full
+## duration (and delay) instead of just a quick correction, so the node's
+## opacity transition stays in sync with its own transform animation.
 func _fade_in_node(node_info: NodeInfo) -> void:
-	var node_duration := max(node_info.duration / 3.0, 0.09)
+	var node_duration := node_info.duration if fade_layout \
+		else max(node_info.duration / 3.0, 0.09)
 	var tween := node_info.node.create_tween()
 
 	if node_info.delay:
 		tween.tween_interval(node_info.delay)
 
-	tween.tween_property(node_info.node, ^"modulate:a", 1.0, node_duration)
+	tween\
+		.set_trans(_transition_enter)\
+		.set_ease(_ease_enter)\
+		.tween_property(node_info.node, ^"modulate:a", 1.0, node_duration)
+
+
+## Fades the node out over its own full duration (and delay).
+func _fade_out_node(node_info: NodeInfo) -> void:
+	if not fade_layout:
+		return
+
+	var tween := node_info.node.create_tween()
+
+	if node_info.delay:
+		tween.tween_interval(node_info.delay)
+
+	tween\
+		.set_trans(_transition_leave)\
+		.set_ease(_ease_leave)\
+		.tween_property(node_info.node, ^"modulate:a", 0.0, node_info.duration)
 
 
 ## Get nodes from array of node paths set by the user.
