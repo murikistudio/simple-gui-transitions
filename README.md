@@ -35,18 +35,16 @@ See the example scene on `addons/simple-gui-transitions/example` to see this plu
 ### Node Configuration
 After installing the plugin, enabling it on `Project > Project Settings > Plugins`
 and reloading your project, you can instance the node `GuiTransition` in your scene.
-See the properties in the next section to learn how to configure it properly, but pay attention to the required properties:
+See the properties in the next section to learn how to configure it properly, but pay attention to the properties:
 
 - `Layout`: The main layout node. It will be hidden and shown accordingly. Should be the topmost node of the current GUI layout, usually the scene root. If you don't set the `Layout ID` property, this node's name will be assumed as the layout ID. **Always required!**
 - `Controls`: An array of nodes that will be animated in sequence.
 
-**Notes:**
-- If you don't set both `Controls`, the `Layout` itself will be animated.
-In this case, the `Delay` property will not be used.
+⚠️ **Note:** If you don't set `Controls`, the `Layout` itself will be animated.
 
 ### Triggering Transitions
 After setting up its properties, the layout should at least be shown with a transition at startup.
-After that you can use code to trigger the transitions. For example:
+After that you can use code to trigger the transitions through the singleton. For example:
 
 ```gdscript
 func _on_button_pressed() -> void:
@@ -87,53 +85,19 @@ func _on_button_pause_pressed() -> void:
     GuiTransitions.show("Pause")
 ```
 
-Another common operation is to not allow controls to be interacted when the
-layout is transitioning. The plugin actually do not allow buttons and other
-interactable nodes to be interacted during the transition, but only if the nodes
-affected by the transition (the `Controls` property) are interactable, that is:
-buttons and other interactable nodes. In the case you the transition is affecting
-an container or any other node that is not interactable, the interaction will not
-be blocked. In such cases, you may check if a transition is currently in progress
-with the `in_transition` method:
-
-```gdscript
-func _on_button_increase_strength_pressed() -> void:
-    if not GuiTransitions.in_transition():
-        strength += 10
-        GuiTransitions.go_to("Hud")
-```
-
-That way, you avoid the player clicking the button during the transition and
-increasing the player's strength multiple times.
-
 Simple GUI Transitions is exactly that: simple to set up and use.
 Check the detailed documentation below to learn more.
-
-### Known Limitations
-- No support for changing properties at runtime. This means that you can't
-add controls to `Controls` at runtime, and changing other properties
-will have unknown side effects.
-Maybe the support for this will be added in the future,
-but this plugin was designed for static menus and interfaces, after all.
-- No support for slide animations on containers.
-The slide animations will work on visible controls
-(such as buttons and other interactable nodes)
-and the layout (if it is using anchors).
-This is due to the fact that the slide transition on controls work through a shader,
-and it can't animate the children of a container.
-The layout transition, in the other hand, works through anchor tweening,
-so make sure the layout is using anchors to be sized on the screen.
 
 ## Global Settings
 The default transition settings can be set on `Project > Project Settings > GUI Transitions > Config` (you may need to enable `Advanced Settings` to see this section).
 Those settings will be applied on top of any `Default` property on the node `GuiTransition`. This is useful to increase or decrease the speed of transitions on the whole project, for example. See each property description below.
 
 ## Node `GuiTransition`
-The node `GuiTransition` is responsible for transitioning a specific layout.
+The node `GuiTransition` is responsible for transitioning a specific layout. Most properties can be changed at runtime, useful if your layout contains dynamic `Controls` (or if you want to add a special touch by making the animations random every time a layout is triggered 😝).
 
 ### Properties
 #### Auto Start
-If the current layout will trigger its transition at startup automatically. Enabled by default.
+If the current layout will trigger its transition at startup automatically. Enabled by default. Invisible layouts won't trigger its transitions.
 
 #### Fade Layout
 If enabled, will fade the *whole layout* along with the selected animation of individual controls. The fade duration is based on the `Duration` property. Enabled by default.
@@ -166,33 +130,37 @@ The default value is `0.5`.
 - A delay of `1.0` will make each control wait for the previous one to finish its animation to start its own.
 - A delay between `0.0` and `1.0` will make controls intertwine animations, giving a smoother effect.
 
-**Note:** See `addons/simple-gui-transitions/example/layout_3.tscn` for an interactive and visual representation of different delay ratios.
+⚠️ **Note:** See `addons/simple-gui-transitions/example/layout_3.tscn` for an interactive and visual representation of different delay ratios.
 
 #### Layout ID
-Optional ID of layout to trigger changes on the singleton `GuiTransitions` (at method parameters named `id`).
+Optional ID of layout to identify this layout to the singleton `GuiTransitions`.
 If empty, will be assumed as the `Layout` node name.
+
+For example, if you call `GuiTransitions.go_to("SomeLayout")`, the layout node must be named `SomeLayout` **or** you should set `Layout ID` to `SomeLayout` for it to be affected by the call.
+
+This property can be useful if you want to trigger more than one layout at the same time with the same ID (a HUD with different animations, for example).
 
 #### Layout
 **Required!** The main layout node. It will be hidden and shown accordingly. Should be the topmost node of the current layout. If your don't set `Controls`, the `Layout` itself will be animated.
 
 #### Controls
 Array of individual nodes to be animated.
-The order will be taken in account to apply the animation `Delay`.
+The order will be taken in consideration to apply the animation `Delay`. You can add or remove items from this array at runtime in case your layout is dynamic.
 
 #### Center Pivot
-When `Animation Enter` or `Animation Leave` is one of the scale animations, it will center the control's `pivot_offset` property.
+When `Animation Enter` or `Animation Leave` is one of the scale or rotate animations, it will center the control's `offset_transform_pivot_ratio` property.
 
 #### Transition Enter
-Transition curve of enter animations. Same as `Tween.TransitionType`.
+Transition curve of enter animations. Same as [`Tween.TransitionType`](https://docs.godotengine.org/en/stable/classes/class_tween.html#enum-tween-transitiontype).
 
 #### Transition Leave
-Transition curve of leave animations. Same as `Tween.TransitionType`.
+Transition curve of leave animations. Same as [`Tween.TransitionType`](https://docs.godotengine.org/en/stable/classes/class_tween.html#enum-tween-transitiontype).
 
 #### Ease Enter
-Ease curve of enter animations. Same as `Tween.EaseType`.
+Ease curve of enter animations. Same as [`Tween.EaseType`](https://docs.godotengine.org/en/stable/classes/class_tween.html#enum-tween-easetype).
 
 #### Ease Leave
-Ease curve of leave animations. Same as `Tween.EaseType`.
+Ease curve of leave animations. Same as [`Tween.EaseType`](https://docs.godotengine.org/en/stable/classes/class_tween.html#enum-tween-easetype).
 
 ## Singleton `GuiTransitions`
 The singleton `GuiTransitions` allows to trigger the transitions globally and swap GUI layouts.
@@ -217,7 +185,7 @@ Emmited when a layout is about to be shown or hidden.
 Emited after a layout has been shown or hidden.
 
 ### Public Methods
-**Note**: Optional arguments in the methods below are suffixed with `?` (e.g. `function?`).
+⚠️ **Note**: Optional arguments in the methods below are suffixed with `?` (e.g. `function?`).
 
 #### go_to(id: StringName, function?: Callable)
 The method `go_to` hides the current layout and shows the layout with the given `id`.
