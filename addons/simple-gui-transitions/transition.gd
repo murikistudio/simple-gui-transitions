@@ -253,10 +253,11 @@ const DEBUG := false
 ## If your don't set [code]Controls[/code],
 ## the [code]Layout[/code] itself will be animated.
 ## [b][color=red]Required![/color][/b]
-@export var layout: NodePath:
+@export_node_path("Control") var layout: NodePath:
 	set(value):
 		layout = value
 		_layout = _get_layout()
+		update_configuration_warnings()
 
 ## Optional ID of layout to trigger changes on the singleton
 ## [code]GuiTransitions[/code] (at method parameters named [code]id[/code]).
@@ -355,7 +356,6 @@ func _ready() -> void:
 		queue_free()
 
 
-# Remove reference from singleton.
 func _exit_tree() -> void:
 	if Engine.is_editor_hint():
 		return
@@ -374,6 +374,19 @@ func _exit_tree() -> void:
 
 	if not layouts.size():
 		GuiTransitions._layouts.erase(layout_id)
+
+
+func _get_configuration_warnings() -> PackedStringArray:
+	var warnings := PackedStringArray()
+
+	if not layout:
+		warnings.push_back("The property Layout must be set.")
+	elif not get_node_or_null(layout):
+		warnings.push_back("The node path set on Layout is not valid.")
+	elif not get_node(layout).is_class("Control"):
+		warnings.push_back("The node set on Layout must be (or derived from) a Control.")
+
+	return warnings
 
 
 # Private methods
