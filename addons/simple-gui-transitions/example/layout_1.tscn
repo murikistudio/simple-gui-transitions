@@ -19,7 +19,7 @@ script = ExtResource("2")
 animation_enter = 0
 animation_leave = 1
 layout = NodePath("..")
-controls = Array[NodePath]([NodePath("../HBoxContainer/VBoxContainer/Label"), NodePath("../HBoxContainer/VBoxContainer/ButtonUpdate"), NodePath("../HBoxContainer/VBoxContainer/ButtonHide"), NodePath("../HBoxContainer/VBoxContainer/ButtonGoTo")])
+controls = Array[NodePath]([NodePath("../HBoxContainer/VBoxContainer/Label"), NodePath("../HBoxContainer/VBoxContainer/VBoxContainer"), NodePath("../HBoxContainer/VBoxContainer/VBoxContainer2"), NodePath("../HBoxContainer/VBoxContainer/ButtonUpdate"), NodePath("../HBoxContainer/VBoxContainer/ButtonHide"), NodePath("../HBoxContainer/VBoxContainer/ButtonGoTo")])
 
 [node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1906163888]
 layout_mode = 0
@@ -50,6 +50,49 @@ size_flags_vertical = 3
 text = "Layout 1"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/VBoxContainer" unique_id=291950952]
+layout_mode = 2
+
+[node name="LabelAnimationEnter" type="Label" parent="HBoxContainer/VBoxContainer/VBoxContainer" unique_id=531564833]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Animation Enter:"
+horizontal_alignment = 1
+
+[node name="SliderAnimationEnter" type="HSlider" parent="HBoxContainer/VBoxContainer/VBoxContainer" unique_id=2077063776]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = -1.0
+max_value = 9.0
+value = -1.0
+rounded = true
+tick_count = 11
+ticks_on_borders = true
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="HBoxContainer/VBoxContainer" unique_id=1334157103]
+layout_mode = 2
+
+[node name="LabelAnimationLeave" type="Label" parent="HBoxContainer/VBoxContainer/VBoxContainer2" unique_id=10389730]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Animation Enter:"
+horizontal_alignment = 1
+
+[node name="SliderAnimationLeave" type="HSlider" parent="HBoxContainer/VBoxContainer/VBoxContainer2" unique_id=1870250747]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = -1.0
+max_value = 9.0
+value = -1.0
+rounded = true
+tick_count = 11
+ticks_on_borders = true
+
+[node name="Control5" type="Control" parent="HBoxContainer/VBoxContainer" unique_id=1815939869]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="ButtonUpdate" type="Button" parent="HBoxContainer/VBoxContainer" unique_id=146345319]
 layout_mode = 2
@@ -82,6 +125,8 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
+[connection signal="value_changed" from="HBoxContainer/VBoxContainer/VBoxContainer/SliderAnimationEnter" to="." method="_on_slider_animation_enter_value_changed"]
+[connection signal="value_changed" from="HBoxContainer/VBoxContainer/VBoxContainer2/SliderAnimationLeave" to="." method="_on_slider_animation_leave_value_changed"]
 [connection signal="pressed" from="HBoxContainer/VBoxContainer/ButtonUpdate" to="." method="_on_ButtonUpdate_pressed"]
 [connection signal="pressed" from="HBoxContainer/VBoxContainer/ButtonHide" to="." method="_on_ButtonHide_pressed"]
 [connection signal="pressed" from="HBoxContainer/VBoxContainer/ButtonGoTo" to="." method="_on_ButtonGoTo_pressed"]
