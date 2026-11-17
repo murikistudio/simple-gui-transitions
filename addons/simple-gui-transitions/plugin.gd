@@ -30,13 +30,11 @@ func _disable_plugin() -> void:
 # Automatically non-existing settings to project settings.
 func _enter_tree() -> void:
 	var replace_existing := DEBUG
-	add_custom_type("GuiTransition", "Node", TransitionNode, TransitionIcon)
 	_add_default_settings(replace_existing)
 
 
 # For debug only.
 func _exit_tree() -> void:
-	remove_custom_type("GuiTransition")
 	if DEBUG:
 		_remove_default_settings()
 

@@ -1,5 +1,6 @@
 @tool
 @icon("res://addons/simple-gui-transitions/icon.png")
+class_name GuiTransition
 extends Node
 ## This node is responsible for transitioning a specific layout.
 ##
